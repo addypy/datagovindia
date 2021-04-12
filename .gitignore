@@ -23,4 +23,6 @@ datagovindia.egg-info
 Network Trash Folder
 Temporary Items
 .apdisk
-
+build
+datagovindia.egg-info
+dist
