@@ -53,10 +53,7 @@ def wipe_resource_id(rsrc_id):
     """Basic cleaning of resource-id string.
     """
     rsrc_id = "".join([c for c in str(rsrc_id) if c.isalnum()]).strip()
-    if len(rsrc_id)!=32:
-        print("{} is not a valid Resource-ID".format(rsrc_id))
-    else:
-        pass
+    assert len(rsrc_id)==32, "{} is not a valid Resource-ID".format(rsrc_id)
     return rsrc_id
 
 def scrub_resource_id(rsrc_id):
@@ -69,10 +66,7 @@ def scrub_resource_id(rsrc_id):
                         rsrc_id[12:16],
                         rsrc_id[16:20],
                         rsrc_id[20:32]])
-    if len(rsrc_id)!=36:
-        print("{} is not a valid Resource-ID".format(rsrc_id))
-    else:
-        pass
+    assert len(rsrc_id)==36, "{} is not a valid Resource-ID".format(rsrc_id)
     return rsrc_id
 
 def calc_loop_steps(n,step_size,offset=0):
@@ -521,9 +515,9 @@ class DataGovIndia:
         self.is_key_valid, self.is_server_up = validation_response['APIKEY'], validation_response['SERVER']
         if self.is_server_up==True:
             if self.is_key_valid == False:
-                print("The API key your provided - {} is invalid! Please generate a valid API key on - https://data.gov.in/user".format(api_key))            
+                print("The API key you provided - {} is INVALID! Please generate a valid API key on - https://data.gov.in/user".format(api_key))            
             elif self.is_key_valid == True:
-                print("The API key you provided is valid. You won't need to set it again.",end='\n')            
+                print("This API key is VALID. You won't need to set it again.",end='\n')            
                 self.max_results_per_req = 1000        
                 self.assets       = util.git_assets()
                 self.attributes   = self.assets.attribute_dict
@@ -537,9 +531,9 @@ class DataGovIndia:
                 self.resource     = None                 
                 self.error_handle = True
                 self.multi_thread = enable_multithreading
-                print('Latest resources loaded. You may begin.                                                    ')
+                print('Latest API-references loaded! You may begin.                                                    ')
         else:
-            print("The datagov.in server appears to be down. Please try a little while later.")
+            print("The `data.gov.in` server appears to be down. Please try a little while later.")
     def enable_multithreading(self):
         """Enables multi-thread API-requests for fast downloads of 
            large datasets.                    
@@ -831,16 +825,20 @@ class DataGovIndia:
     def get_resource_fields(self,rsrc_id):
         """Get details of fields (variables) available for a `data.gov.in` data resource.
         """        
-
-        rsrc_id  = wipe_resource_id(rsrc_id)    
-        if rsrc_id in self.assets.resource_ids:            
-            fieldcodes  = self.idxfieldmap[rsrc_id]
-            fieldlabels = [self.assets.field_label_map[f] for f in fieldcodes]
-            fielddtypes = [self.assets.field_dtype_map[f] for f in fieldcodes]            
-            fieldinfo   = [{'field_code':fieldcodes[f],'field_label':fieldlabels[f],'field_type':fielddtypes[f]} for f in range(len(fieldcodes))]
-            return pd.DataFrame(fieldinfo)            
-        else:
+        try:
+            rsrc_id  = wipe_resource_id(rsrc_id)    
+            if rsrc_id in self.assets.resource_ids:            
+                fieldcodes  = self.idxfieldmap[rsrc_id]
+                fieldlabels = [self.assets.field_label_map[f] for f in fieldcodes]
+                fielddtypes = [self.assets.field_dtype_map[f] for f in fieldcodes]            
+                fieldinfo   = [{'field_code':fieldcodes[f],'field_label':fieldlabels[f],'field_type':fielddtypes[f]} for f in range(len(fieldcodes))]
+                return pd.DataFrame(fieldinfo)            
+            else:
+                print("{} is not a valid Resource-ID".format(rsrc_id))      
+        except AssertionError:
             print("{} is not a valid Resource-ID".format(rsrc_id))      
+
+            
     def get_last_resource(self):
         """Returns the last collected data.
         """
