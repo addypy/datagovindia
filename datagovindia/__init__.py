@@ -881,4 +881,3 @@ class DataGovIndia:
         self.resource.make_urls()
         data = self.resource.get_data()
         return data
-

@@ -2494,6 +2494,6 @@ datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
 >
 > Authors : 
 >
-> > - [Aditya Karan Chhabra]((https://github.com/addypy)
+> > - [Aditya Karan Chhabra](https://github.com/addypy)
 >
 > > - [Abhishek Arora](https://github.com/econabhishek)
