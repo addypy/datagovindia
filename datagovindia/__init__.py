@@ -395,27 +395,60 @@ class Resource:
                 continue
         return self.data.drop_duplicates()
 
+
+def test_server(n=3):
+    """
+    Checks server status at datagovin.
+    Returns list of n working-apis if server is functional.
+    """
+
+    server_response = {}
+    working_api_url      = "https://api.data.gov.in/lists?format=json&notfilters[source]=visualize.data.gov.in&filters[active]=1&offset=0&sort[updated]=desc&limit={}".format(n)
+    working_api_response = requests.get(working_api_url,timeout=30)
+    working_api_content  = working_api_response.json()
+    
+    if working_api_content['status']=="ok":
+        records      = working_api_content['records']
+        working_apis = [record.get('index_name','') for record in records]
+        working_apis = [w for w in working_apis if len(w)>0]
+        server_response['working_apis'] = working_apis
+        server_response['status']       = True
+    else:
+        server_response['working_apis'] = []
+        server_response['status']       = False
+    return server_response
+
+
 def validate_key(api_key,attempts=1):
-    for _ in range(attempts):
-        try:
-            assert len(api_key)==56,"API-Key {} invalid.".format(api_key)
-            working_api_url      = "https://api.data.gov.in/lists?format=json&notfilters[source]=visualize.data.gov.in&filters[active]=1&offset=0&sort[updated]=desc&limit=1"
-            working_api_response = requests.get(working_api_url,timeout=10)
-            working_api_content  = working_api_response.json()
-            working_resource_index = working_api_content['records'][0]['index_name']        
-            urltool              = URLTool(api_key,max_results=10)                      # Dependency on previous func
-            urltool.add_resource_id(working_resource_index)
-            test_api_url         = urltool.build()
-            test_response        = requests.get(test_api_url,timeout=30)
-            test_content         = test_response.json()
-            records              = test_content['records']
-            assert len(records)>0
-            api_validity       = True
-            break
-        except:
-            api_validity       = False
-            continue
-    return api_validity
+    """
+    Runs a quick test on server
+    If server is UP, uses working-api-indices to fetch a dataframe
+    """
+    api_validity       = False
+    server_status      = False
+    if len(api_key)==56:
+        server_response   = test_server(n=3)
+        server_status     = server_response['status']
+        test_api_idx_list = server_response['working_apis']
+        if server_status==True:
+            for _ in range(attempts):
+                test_api_idx = np.random.choice(test_api_idx_list)
+                try:                            
+                    urltool              = URLTool(api_key,max_results=10)       # Dependency on previous func
+                    urltool.add_resource_id(test_api_idx)
+                    test_api_url         = urltool.build()
+                    test_response        = requests.get(test_api_url,timeout=30)
+                    test_content         = test_response.json()
+                    records              = test_content['records']
+                    if len(records)>0:
+                        api_validity       = True
+                        break
+                except:
+                    api_validity       = False
+                    continue
+    else:
+        print("API-Key {} invalid.".format(api_key))
+    return {'APIKEY':api_validity,"SERVER":server_status}
 
 
 class DataGovIndia:    
@@ -475,25 +508,28 @@ class DataGovIndia:
         """
         self.api_key      = "".join([a for a in api_key if a.isalnum()]).lower().strip()
         print("Validating `API-Key`              \r",end="")
-        self.is_key_valid = validate_key(self.api_key)
-        if self.is_key_valid == False:
-            print("The API key your provided - {} is invalid! Please generate a valid API key on - https://data.gov.in/user".format(api_key))            
-        elif self.is_key_valid == True:
-            print("The API key you provided is valid. You won't need to set it again.",end='\n')            
-            self.max_results_per_req = 1000        
-            self.assets       = util.git_assets()
-            self.attributes   = self.assets.attribute_dict
-            self.org_types    = self.attributes['org_types']
-            self.org_names    = self.attributes['org_names']
-            self.sources      = self.attributes['sources']
-            self.sectors      = self.attributes['sectors']   
-            self.idxtitlemap  = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_title_map}
-            self.idxfieldmap  = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_field_map}            
-            self.countmap     = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_nrecords_map}                        
-            self.resource     = None                 
-            self.error_handle = True
-            self.multi_thread = enable_multithreading
-            print('Latest resources loaded. You may begin.                                                    ')
+        self.is_key_valid, self.is_server_up = validate_key(self.api_key)
+        if self.is_server_up==True:
+            if self.is_key_valid == False:
+                print("The API key your provided - {} is invalid! Please generate a valid API key on - https://data.gov.in/user".format(api_key))            
+            elif self.is_key_valid == True:
+                print("The API key you provided is valid. You won't need to set it again.",end='\n')            
+                self.max_results_per_req = 1000        
+                self.assets       = util.git_assets()
+                self.attributes   = self.assets.attribute_dict
+                self.org_types    = self.attributes['org_types']
+                self.org_names    = self.attributes['org_names']
+                self.sources      = self.attributes['sources']
+                self.sectors      = self.attributes['sectors']   
+                self.idxtitlemap  = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_title_map}
+                self.idxfieldmap  = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_field_map}            
+                self.countmap     = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_nrecords_map}                        
+                self.resource     = None                 
+                self.error_handle = True
+                self.multi_thread = enable_multithreading
+                print('Latest resources loaded. You may begin.                                                    ')
+        else:
+            print("The datagov.in server appears to be down. Please try a little while later.")
     def enable_multithreading(self):
         """Enables multi-thread API-requests for fast downloads of 
            large datasets.                    
