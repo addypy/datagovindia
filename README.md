@@ -40,7 +40,8 @@ datagovin = DataGovIndia("579b454db66ec23bdd0000028bacb6c0f91845af635ee6e722sd9d
 ```
 
 > Performs :
->> 1) Validates API-Key. You only need to set it once. 
+>> 1) Tests datagov.in API-server status.
+>> 2) Validates API-Key. You only need to set this once. 
 >> 2) Fetches latest details about available APIs. 
 
 ### Search
@@ -112,8 +113,10 @@ api_key = "579b454db66ec23bdd0000028bacb6c0f91845af635ee6e722sd9dd44"
 
 ```python
 # Initializing the library - 
-#   1. Validates your api-key
-#   2. Fetches the latest API information
+# 1) Tests datagov.in API-server status.
+# 2) Validates API-Key. You only need to set this once. 
+# 2) Fetches latest details about available APIs. 
+
 
 datagovin = DataGovIndia(api_key)
 
