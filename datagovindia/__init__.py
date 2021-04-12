@@ -508,7 +508,8 @@ class DataGovIndia:
         """
         self.api_key      = "".join([a for a in api_key if a.isalnum()]).lower().strip()
         print("Validating `API-Key`              \r",end="")
-        self.is_key_valid, self.is_server_up = validate_key(self.api_key)
+        validation_response = validate_key(self.api_key)
+        self.is_key_valid, self.is_server_up = validation_response['APIKEY'], validation_response['SERVER']
         if self.is_server_up==True:
             if self.is_key_valid == False:
                 print("The API key your provided - {} is invalid! Please generate a valid API key on - https://data.gov.in/user".format(api_key))            
