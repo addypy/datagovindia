@@ -1,0 +1,3 @@
+exclude .travis.yml
+exclude appveyor.yml
+exclude data/
