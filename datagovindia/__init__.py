@@ -7,9 +7,10 @@ datagovindia` is an API wrapper for the over 80,000 APIs available at Government
 ==============================================================================
                             LICENSE
 ==============================================================================
+
 MIT License
 
-Copyright (c) 2021 Aditya Karan Chhabra
+Copyright (c) 2021 ADITYA KARAN CHHABRA and ABHISHEK ARORA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +53,10 @@ def wipe_resource_id(rsrc_id):
     """Basic cleaning of resource-id string.
     """
     rsrc_id = "".join([c for c in str(rsrc_id) if c.isalnum()]).strip()
-    assert len(rsrc_id)==32, "Resource-ID invalid"
+    if len(rsrc_id)!=32:
+        print("{} is not a valid Resource-ID".format(rsrc_id))
+    else:
+        pass
     return rsrc_id
 
 def scrub_resource_id(rsrc_id):
@@ -65,7 +69,10 @@ def scrub_resource_id(rsrc_id):
                         rsrc_id[12:16],
                         rsrc_id[16:20],
                         rsrc_id[20:32]])
-    assert len(rsrc_id)==36, "Resource-ID invalid"
+    if len(rsrc_id)!=36:
+        print("{} is not a valid Resource-ID".format(rsrc_id))
+    else:
+        pass
     return rsrc_id
 
 def calc_loop_steps(n,step_size,offset=0):
@@ -447,7 +454,9 @@ def validate_key(api_key,attempts=1):
                     api_validity       = False
                     continue
     else:
-        print("API-Key {} invalid.".format(api_key))
+        api_validity  = False
+        server_status = True
+        pass
     return {'APIKEY':api_validity,"SERVER":server_status}
 
 
@@ -475,7 +484,7 @@ class DataGovIndia:
     
     For the R/CRAN package, visit - 
             https://github.com/econabhishek/datagovindia
-            or 
+            
             https://github.com/cran/datagovindia
     """
     def __init__(self, api_key, enable_multithreading=False):
@@ -485,7 +494,6 @@ class DataGovIndia:
         Args:
         =====
             `api_key` : API-KEY (str)
-
         
         Optional:    
         =========
@@ -499,10 +507,11 @@ class DataGovIndia:
         of your internet connection.
              
         Initialization performs two key tasks:        
-            1) Validates the API-key provided 
+            1) Tests server
+            - Tests data.gov.in server to check if APIs are functional.
+            2) Validates the API-key provided 
             - Once validated, the API-key is stored and does not need to be entered again.
-
-            2) Loads latest API meta-data.
+            3) Loads latest API meta-data.
             - Downloads and loads data containing the latest details of available APIs.                
 
         """
@@ -822,7 +831,8 @@ class DataGovIndia:
     def get_resource_fields(self,rsrc_id):
         """Get details of fields (variables) available for a `data.gov.in` data resource.
         """        
-        rsrc_id  = wipe_resource_id(rsrc_id)
+
+        rsrc_id  = wipe_resource_id(rsrc_id)    
         if rsrc_id in self.assets.resource_ids:            
             fieldcodes  = self.idxfieldmap[rsrc_id]
             fieldlabels = [self.assets.field_label_map[f] for f in fieldcodes]
@@ -830,7 +840,7 @@ class DataGovIndia:
             fieldinfo   = [{'field_code':fieldcodes[f],'field_label':fieldlabels[f],'field_type':fielddtypes[f]} for f in range(len(fieldcodes))]
             return pd.DataFrame(fieldinfo)            
         else:
-            print("Resource-ID - {} incorrect.".format(rsrc_id))        
+            print("{} is not a valid Resource-ID".format(rsrc_id))      
     def get_last_resource(self):
         """Returns the last collected data.
         """

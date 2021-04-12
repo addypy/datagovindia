@@ -8,8 +8,9 @@ with open(path.join(directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="datagovindia",
-    version='0.1',
+    version='0.2',
     author='Aditya Karan Chhabra',
+    maintainer = 'Abhishek Arora',    
     author_email='aditya0chhabra@gmail.com',
     packages=find_packages(include=['datagovindia', 'datagovindia.*'],exclude=['data','.*gz']),
     scripts=['datagovindia/__init__.py','datagovindia/util.py'],

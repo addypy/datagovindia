@@ -22,10 +22,18 @@
     - (Instructions here : [Official Guide](https://data.gov.in/help/how-use-datasets-apis))
 
 ## Installation
+> - Using PIP
 ```sh
 pip install -U datagovindia
 ```
 -------
+> - Clone the Git-Repository
+```sh
+git clone https://github.com/addypy/datagovindia
+
+sudo python setup.py install
+
+```
 
 ## Basic Usage
 
@@ -36,7 +44,7 @@ from datagovindia import DataGovIndia
 
 ### Initialize Class
 ```python
-datagovin = DataGovIndia("579b454db66ec23bdd0000028bacb6c0f91845af635ee6e722sd9dd44")
+datagovin = DataGovIndia("579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b")
 ```
 
 > Performs :
@@ -106,7 +114,7 @@ from datagovindia import DataGovIndia
 > See : [Official Guide](https://data.gov.in/help/how-use-datasets-apis)
 
 ```python
-api_key = "579b454db66ec23bdd0000028bacb6c0f91845af635ee6e722sd9dd44"
+api_key = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
 ```
 
 > ### Initialize Class
@@ -2481,4 +2489,11 @@ datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
 > - For the R/CRAN package, visit -
 >   
 >   > [github.com/econabhishek/datagovindia](https://github.com/econabhishek/datagovindia)
+>
 >   > [github.com/cran/datagovindia](https://github.com/cran/datagovindia)
+>
+> Authors : 
+>
+> > - [Aditya Karan Chhabra]((https://github.com/addypy)
+>
+> > - [Abhishek Arora](https://github.com/econabhishek)

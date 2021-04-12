@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2021 Aditya Karan Chhabra
+Copyright (c) 2021 ADITYA KARAN CHHABRA and ABHISHEK ARORA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
