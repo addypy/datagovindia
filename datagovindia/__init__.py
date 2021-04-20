@@ -120,13 +120,13 @@ def search_json(attr_map,query,n,error_handle=True):
         if R==0:
 
             if error_handle==True:
-                print("Found 0 matching results. Try searching with shorter queries")
+                print("Found 0 results. Try searching with shorter queries")
             else:
                 pass
             return []
         else:
             if error_handle==True:          
-                print("Showing {} of {} results for : `{}`".format(min(R,n),R,query))                      
+                print("{} of {} results for : `{}`".format(min(R,n),R,query))                      
             else:
                 pass
             return results[:n]
@@ -478,6 +478,9 @@ class DataGovIndia:
             
             https://github.com/cran/datagovindia
     """
+    
+    sample_key = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
+
     def __init__(self, api_key, enable_multithreading=False):
         """
         Initialize `class` by providing a valid `api-key` from `data.gov.in/user`
@@ -507,14 +510,14 @@ class DataGovIndia:
 
         """
         self.api_key      = "".join([a for a in api_key if a.isalnum()]).lower().strip()
-        print("Validating `API-Key`              \r",end="")
+        print("Step (1/2) - Validating `API-Key`              \r",end="")
         validation_response = validate_key(self.api_key)
         self.is_key_valid, self.is_server_up = validation_response['APIKEY'], validation_response['SERVER']
         if self.is_server_up==True:
             if self.is_key_valid == False:
                 print("The API key you provided - {} is INVALID! Please generate a valid API key here - https://data.gov.in/user".format(api_key))            
             elif self.is_key_valid == True:
-                if api_key == "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b":
+                if api_key == self.sample_key:
                     print("This API key is a sample key, and does not have full access.")
                     print("\tFor full access, generate a valid API key here - https://data.gov.in/user",end="\n")
                     self.is_sample_key  = True
@@ -536,7 +539,7 @@ class DataGovIndia:
                 self.resource     = None                 
                 self.error_handle = True
                 self.multi_thread = enable_multithreading
-                print('Latest API-references loaded! You may begin.                                                    ')
+                print('Step (2/2) - Latest API-references loaded! You may begin.                                                    ')
         else:
             print("The `data.gov.in` server appears to be down. Please try a little while later.")
     def enable_multithreading(self):
@@ -620,7 +623,7 @@ class DataGovIndia:
         if query in self.org_names:
             result_indices = np.ravel([list(item.values()) for item in self.assets.org_idx_map if list(item.keys())[0]==query])
             if self.error_handle==True:
-                print("Showing {} of {} results for `organization` - `{}`".format(min(len(result_indices),max_results),len(result_indices),query))
+                print("{} of {} results for `organization` - `{}`".format(min(len(result_indices),max_results),len(result_indices),query))
             else:
                 pass
             results = [{r:self.idxtitlemap[r]} for r in result_indices][:max_results]
@@ -653,7 +656,7 @@ class DataGovIndia:
         if query in self.org_types:
             result_indices = np.ravel([list(item.values()) for item in self.assets.orgtype_idx_map if list(item.keys())[0]==query])            
             if self.error_handle==True:
-                print("Showing {} of {} results for `organization type` - `{}`".format(min(len(result_indices),max_results),len(result_indices),query))
+                print("{} of {} results for `organization type` - `{}`".format(min(len(result_indices),max_results),len(result_indices),query))
             else:
                 pass
             results = [{r:self.idxtitlemap[r]} for r in result_indices][:max_results]
@@ -690,7 +693,7 @@ class DataGovIndia:
         if query in self.sectors:
             result_indices = self.assets.sector_idx_map[query]      
             if self.error_handle==True:                  
-                print("Showing {} of {} results for `sector` : `{}`".format(min(len(result_indices),max_results),len(result_indices),query))
+                print("{} of {} results for `sector` : `{}`".format(min(len(result_indices),max_results),len(result_indices),query))
             else:
                 pass
             results = [{r:self.idxtitlemap[r]} for r in result_indices][:max_results]
@@ -726,7 +729,7 @@ class DataGovIndia:
         if query in self.sources:
             result_indices = self.assets.source_idx_map[query]
             if self.error_handle==True:
-                print("Showing {} of {} results for `source` : `{}`".format(min(len(result_indices),max_results),len(result_indices),query))
+                print("{} of {} results for `source` : `{}`".format(min(len(result_indices),max_results),len(result_indices),query))
             else:
                 pass
             results = [{r:self.idxtitlemap[r]} for r in result_indices][:max_results]
@@ -803,7 +806,7 @@ class DataGovIndia:
         self.error_handle = True
 
         if M>0:
-            print("Showing {} of {} matching results".format(min(M,max_results),M))                        
+            print("{} of {} results".format(min(M,max_results),M))                        
             results = [{match:self.idxtitlemap[match]} for match in matches][:max_results]
             if print_results==True:
                 pp_results(results)            
