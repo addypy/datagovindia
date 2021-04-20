@@ -87,9 +87,9 @@ class git_assets:
             field_label_fp,
             field_dtype_fp,                        
             ]
-        print('Loading latest API reference data. This may take a few seconds...........\r',end='')
+        print('Loading latest API reference data. This may take a few seconds..............\r',end='')
         asset_data = fetch_assets_from_github(asset_url_seq)
-        print('Loading latest API reference data. This may take a few seconds.........      \r',end='')
+        print('Loading latest API reference data. This may take a few seconds..........    \r',end='')
         self.attribute_dict     = asset_data[0]
         self.idx_map            = asset_data[1]
         self.org_idx_map        = asset_data[2]
@@ -98,7 +98,7 @@ class git_assets:
         self.sector_idx_map     = asset_data[5]
         self.field_label_map    = asset_data[6]
         self.field_dtype_map    = asset_data[7]
-        print('Loading latest API reference data. This may take a few seconds.......          \r',end='')
+        print('Loading latest API reference data. This may take a few seconds.......        \r',end='')
         self.resource_ids           = np.array([k.get('resourceid') for k in self.idx_map])        
         self.idx_title_map          = [{k.get("resourceid"):k.get("title","")} for k in self.idx_map]
         self.idx_desc_map           = [{k.get("resourceid"):k.get("desc","")} for k in self.idx_map]
@@ -109,7 +109,7 @@ class git_assets:
         self.idx_orgname_map        = [{k.get("resourceid"):k.get("orgnames",[])} for k in self.idx_map]                
         self.idx_orgtype_map        = [{k.get("resourceid"):k.get("orgtype","")} for k in self.idx_map]                             
         self.idx_sector_map         = [{k.get("resourceid"):k.get("sectors",[])} for k in self.idx_map]        
-        print('Loading latest API reference data. This may take a few seconds....               \r',end='')
+        print('Loading latest API reference data. This may take a few seconds....             \r',end='')
 
     def compile_resource_fields(self,rsrc_id):
         """

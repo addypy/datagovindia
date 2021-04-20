@@ -512,9 +512,16 @@ class DataGovIndia:
         self.is_key_valid, self.is_server_up = validation_response['APIKEY'], validation_response['SERVER']
         if self.is_server_up==True:
             if self.is_key_valid == False:
-                print("The API key you provided - {} is INVALID! Please generate a valid API key on - https://data.gov.in/user".format(api_key))            
+                print("The API key you provided - {} is INVALID! Please generate a valid API key here - https://data.gov.in/user".format(api_key))            
             elif self.is_key_valid == True:
-                print("This API key is VALID. You won't need to set it again.",end='\n')            
+                if api_key == "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b":
+                    print("This API key is a sample key, and does not have full access.")
+                    print("\tFor full access, generate a valid API key here - https://data.gov.in/user",end="\n")
+                    pass
+                else:
+                    print("This API key is VALID",)            
+                    print("\tYou will not need to enter it again.",end="\n")
+                    pass
                 self.max_results_per_req = 1000        
                 self.assets       = util.git_assets()
                 self.attributes   = self.assets.attribute_dict
