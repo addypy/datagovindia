@@ -24,6 +24,13 @@ def format_time(ts):
     """
     return time.strftime("%d %B %Y, %I:%M %p", time.localtime(int(ts)))
 
+def wipe_resource_id(rsrc_id):
+    """Basic cleaning of resource-id string.
+    """
+    rsrc_id = "".join([c for c in str(rsrc_id) if c.isalnum()]).strip()
+    assert len(rsrc_id)==32, "{} is not a valid Resource-ID".format(rsrc_id)
+    return rsrc_id
+
 def scrub_resource_id(rsrc_id):
     """ Converts Resource-ID in the correct format
         acceptable format : 8,4,4,4,12
