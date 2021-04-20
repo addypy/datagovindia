@@ -816,6 +816,7 @@ class DataGovIndia:
                 - Sector
                 - Fields
         """
+        rsrc_id  = wipe_resource_id(rsrc_id)
         results = self.assets.compile_all_information(rsrc_id,self.api_key)        
 
         return results

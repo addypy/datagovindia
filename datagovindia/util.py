@@ -24,15 +24,28 @@ def format_time(ts):
     """
     return time.strftime("%d %B %Y, %I:%M %p", time.localtime(int(ts)))
 
+def scrub_resource_id(rsrc_id):
+    """ Converts Resource-ID in the correct format
+        acceptable format : 8,4,4,4,12
+    """
+    rsrc_id = wipe_resource_id(rsrc_id)
+    rsrc_id = "-".join([rsrc_id[:8],
+                        rsrc_id[8:12],
+                        rsrc_id[12:16],
+                        rsrc_id[16:20],
+                        rsrc_id[20:32]])
+    assert len(rsrc_id)==36, "{} is not a valid Resource-ID".format(rsrc_id)
+    return rsrc_id
+
 def fetch_nrecords(resourceid,api_key):
     """
     Fetch number of records in realtime
+    resourceid must be in in `scrub_resource_id` format
     """
     try:
-        api_rsrc_id = scrub_resource_id(resourceid)
-        url         = "https://api.data.gov.in/resource/{}?api-key={}&format=json&offset=0&limit=0".format(api_rsrc_id,api_key)
-        response    = requests.get(url)
-        total       = response.json().get('total',np.inf)
+        url         = "https://api.data.gov.in/resource/{}?api-key={}&format=json&offset=0&limit=0".format(scrub_resource_id(resourceid),api_key)
+        response    = requests.get(url).json()
+        total       = response.get('total',np.inf)
     except:
         total = np.inf
     return total
@@ -102,11 +115,10 @@ class git_assets:
     def compile_all_information(self,rsrc_id,api_key):
         """        
         """
-        if rsrc_id in self.resource_ids:
-            
+        if rsrc_id in self.resource_ids:            
             title       = [list(item.values())[0] for item in self.idx_title_map if list(item.keys())[0]==rsrc_id][0]
             desc        = [list(item.values())[0] for item in self.idx_desc_map if list(item.keys())[0]==rsrc_id][0]
-            nrecords    = fetch_nrecords(rsrc_id,api_key)
+            nrecords    = fetch_nrecords(scrub_resource_id(rsrc_id),api_key)
             created_on  = format_time([list(item.values())[0] for item in self.idx_creationtime_map if list(item.keys())[0]==rsrc_id][0])
             updated_on  = format_time([list(item.values())[0] for item in self.idx_updationtime_map if list(item.keys())[0]==rsrc_id][0])
             orgnames    = list(np.ravel([list(item.values()) for item in self.idx_orgname_map if list(item.keys())[0]==rsrc_id]))
