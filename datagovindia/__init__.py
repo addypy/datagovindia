@@ -539,7 +539,7 @@ class DataGovIndia:
                 self.resource     = None                 
                 self.error_handle = True
                 self.multi_thread = enable_multithreading
-                print('Step (2/2) - Latest API meta-data loaded! You may begin.                                                    ')
+                print('Step (2/2) : Latest API meta-data loaded! You may begin.                                                    ')
         else:
             print("The `data.gov.in` server appears to be down. Please try a little while later.")
     def enable_multithreading(self):
@@ -889,7 +889,7 @@ class DataGovIndia:
         self.resource.make_urls()
         data = self.resource.get_data()
         if self.is_sample_key==True:
-            print("*Warning*\nYou are using a sample API-key. Some observations might have been omitted")
+            print("*Warning*\nYou are using a sample API-key. Some observations may be missing.")
         else:
             pass
         return data
