@@ -1,6 +1,7 @@
 # **datagovindia**
 
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/) [![Downloads](https://static.pepy.tech/personalized-badge/datagovindia?period=total&units=international_system&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/datagovindia)
+
 
 ### A Python API-wrapper for Government of India’s [Open Government Data OGD platform](https://data.gov.in/)
 **`datagovindia`** is an API wrapper for > 83,000 APIs (and counting) available at Government of India’s *[Open Government Data OGD platform](https://data.gov.in/ogpl_apis)*
@@ -2488,3 +2489,10 @@ datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
 > > - [Aditya Karan Chhabra](mailto:aditya0chhabra@gmail.com)
 >
 > > - [Abhishek Arora](mailto:abhishek.arora1996@gmail.com)
+>
+> ## **Latest Meta-Data Updates** :
+> 
+>  > Last Update : Tuesday, 20 April 2021 (IST)
+>
+>  > Number of active APIs: 83022
+>
