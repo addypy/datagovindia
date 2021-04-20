@@ -17,7 +17,7 @@ setup(
     url='https://pypi.org/project/datagovindia/',
     download_url = "https://github.com/addypy/datagovindia/",
     license='MIT',
-    description="A Python API-wrapper for Government of India’s Open Government Data (OGD) platform - data.gov.in",
+    description="Python API-wrapper for Government of India’s Open Government Data (OGD) platform - data.gov.in",
     long_description=long_description,
     long_description_content_type='text/markdown',
     classifiers=[
