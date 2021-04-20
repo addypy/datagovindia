@@ -296,7 +296,7 @@ class Resource:
         else:            
             self.rsrc_id = scrub_resource_id(self.resource_index_string)
             try:
-                self.count = self.parent.countmap[self.resource_index_string]
+                self.count = util.fetch_nrecords(self.resource_index_string,self.parent.api_key)
             except KeyError as err:
                 self.count = np.inf            
     def fetch_true_fields(self):
@@ -315,8 +315,7 @@ class Resource:
                     incorrect_field_list_str = "; ".join([p for p in potential_incorrect_fields])
                     print("These field(s) are invalid for this resource - {}".format(incorrect_field_list_str),end="\n\n")
                     print("Valid field(s) are - \n{}".format(self.correct_field_list_str))
-                    # Haven't implemented arg-type checks yet.
-                    # or... Value checks.                
+
                 else:                 
                     self.filters = filters
         else:
@@ -330,8 +329,6 @@ class Resource:
                                 
                 print("These field(s) are invalid for this resource - {}".format(incorrect_field_list_str),end="\n\n")
                 print("Valid field(s) are - \n{}".format(self.correct_field_list_str))
-            # Haven't implemented arg-type checks yet.
-            # or... Value checks.                
             else:                 
                 self.fields = fields
     def set_sort_key(self,sort_key,sort_order):
@@ -527,7 +524,6 @@ class DataGovIndia:
                 self.sectors      = self.attributes['sectors']   
                 self.idxtitlemap  = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_title_map}
                 self.idxfieldmap  = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_field_map}            
-                self.countmap     = {list(item.keys())[0] : list(item.values())[0] for item in self.assets.idx_nrecords_map}                        
                 self.resource     = None                 
                 self.error_handle = True
                 self.multi_thread = enable_multithreading
@@ -820,7 +816,8 @@ class DataGovIndia:
                 - Sector
                 - Fields
         """
-        results = self.assets.compile_all_information(rsrc_id)        
+        results = self.assets.compile_all_information(rsrc_id,self.api_key)        
+
         return results
     def get_resource_fields(self,rsrc_id):
         """Get details of fields (variables) available for a `data.gov.in` data resource.
