@@ -16,13 +16,26 @@ def fetch_assets_from_github(url_seq,time_out=60):
     datasets = []
     with concurrent.futures.ThreadPoolExecutor() as executor: 
         futures = [executor.submit(fetch_asset, url) for url in url_seq]
-    executor.shutdown()   
+    executor.shutdown()    
     return [future.result() for future in futures]
 
 def format_time(ts):
     """Converts UNIX timestamp to local timestring with human-readable format
     """
     return time.strftime("%d %B %Y, %I:%M %p", time.localtime(int(ts)))
+
+def fetch_nrecords(resourceid,api_key):
+    """
+    Fetch number of records in realtime
+    """
+    try:
+        api_rsrc_id = scrub_resource_id(resourceid)
+        url         = "https://api.data.gov.in/resource/{}?api-key={}&format=json&offset=0&limit=0".format(api_rsrc_id,api_key)
+        response    = requests.get(url)
+        total       = response.json().get('total',np.inf)
+    except:
+        total = np.inf
+    return total
 
 class git_assets:
     """
@@ -74,8 +87,7 @@ class git_assets:
         self.idx_field_map          = [{k.get("resourceid"):k.get("fields",[])} for k in self.idx_map]    
         self.idx_source_map         = [{k.get("resourceid"):k.get("source","")} for k in self.idx_map]                
         self.idx_orgname_map        = [{k.get("resourceid"):k.get("orgnames",[])} for k in self.idx_map]                
-        self.idx_orgtype_map        = [{k.get("resourceid"):k.get("orgtype","")} for k in self.idx_map]                            
-        self.idx_nrecords_map       = [{k.get("resourceid"):k.get("nrecords",np.nan)} for k in self.idx_map]    
+        self.idx_orgtype_map        = [{k.get("resourceid"):k.get("orgtype","")} for k in self.idx_map]                             
         self.idx_sector_map         = [{k.get("resourceid"):k.get("sectors",[])} for k in self.idx_map]        
         print('Loading latest API reference data. This may take a few seconds....               \r',end='')
 
@@ -86,14 +98,15 @@ class git_assets:
         fields = list(np.ravel([next(iter(d.values())) for d in self.idx_field_map if next(iter(d))==rsrc_id]))
         labels = [self.field_label_map[f] for f in fields]
         return {fields[f]:labels[f] for f in range(len(fields))}        
-    def compile_all_information(self,rsrc_id):
+        
+    def compile_all_information(self,rsrc_id,api_key):
         """        
         """
         if rsrc_id in self.resource_ids:
             
             title       = [list(item.values())[0] for item in self.idx_title_map if list(item.keys())[0]==rsrc_id][0]
             desc        = [list(item.values())[0] for item in self.idx_desc_map if list(item.keys())[0]==rsrc_id][0]
-            nrecords    = [list(item.values())[0] for item in self.idx_nrecords_map if list(item.keys())[0]==rsrc_id][0]
+            nrecords    = fetch_nrecords(rsrc_id,api_key)
             created_on  = format_time([list(item.values())[0] for item in self.idx_creationtime_map if list(item.keys())[0]==rsrc_id][0])
             updated_on  = format_time([list(item.values())[0] for item in self.idx_updationtime_map if list(item.keys())[0]==rsrc_id][0])
             orgnames    = list(np.ravel([list(item.values()) for item in self.idx_orgname_map if list(item.keys())[0]==rsrc_id]))

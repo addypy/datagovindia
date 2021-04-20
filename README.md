@@ -3,7 +3,7 @@
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/) [![Downloads](https://static.pepy.tech/personalized-badge/datagovindia?period=total&units=international_system&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/datagovindia)
 
 ### A Python API-wrapper for Government of India’s [Open Government Data OGD platform](https://data.gov.in/)
-**`datagovindia`** is an API wrapper for the over 80,000 APIs available at Government of India’s *[Open Government Data OGD platform](https://data.gov.in/ogpl_apis)*
+**`datagovindia`** is an API wrapper for > 83,000 APIs (and counting) available at Government of India’s *[Open Government Data OGD platform](https://data.gov.in/ogpl_apis)*
 
 -------
 
@@ -31,7 +31,7 @@ pip install -U datagovindia
 ```sh
 git clone https://github.com/addypy/datagovindia
 
-sudo python setup.py install
+python setup.py install
 
 ```
 
@@ -54,7 +54,7 @@ datagovin = DataGovIndia("579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac57
 
 ### Search
 ```python
-datagovin.search(description="Wheat",max_results=3,print_results=True)
+datagovin.search(description="Wheat",max_results=1,print_results=True)
 ```
 
 > Output:
@@ -2431,69 +2431,60 @@ datagovin.get_data("b9cfed4ca1a24f7aaffa88a8e1a2149c",
 
 ```python
 datagovin.get_resource_info("dad7a738fd3b437dad31e1f844e9a575")['TotalRecords']
+
+# Returns:
+# 20197
 ```
 
-```
-# Returns:
-20197
-```
 >> ### To Enable Multi-threading -
 ```python
 datagovin.enable_multithreading()
-```
 
-```
 # Returns:
-Multi-Threaded API requests enabled.
+# Multi-Threaded API requests enabled.
 ```
 
 ```python
 %%timeit
 datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
-```
 
-```
 # Returns:
-258 ms ± 11.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+# 258 ms ± 11.5 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
 
 >> ### To Disable Multi-threading -
 
 ```python
 datagovin.disable_multithreading()
-```
-
-```
 # Returns:
-Multi-Threaded API requests disabled.
+# Multi-Threaded API requests disabled.
 ```
 
 ```python
 %%timeit
 datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
-```
-
-```
 # Returns:
-2.74 s ± 194 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+# 2.74 s ± 194 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ```
 
 --------
 
 > ## **Documentation**
 > 
-> - For all Python documentation, visit -
+> - For the Python library, visit -
 >   
+>   > [pypi.org/project/datagovindia/](https://pypi.org/project/datagovindia/)
+> 
 >   > [github.com/addypy/datagovindia](https://github.com/addypy/datagovindia)
 >   
 > - For the R/CRAN package, visit -
 >   
+>   > [cran.r-project.org/web/packages/datagovindia](https://cran.r-project.org/web/packages/datagovindia)
+>
 >   > [github.com/econabhishek/datagovindia](https://github.com/econabhishek/datagovindia)
 >
->   > [github.com/cran/datagovindia](https://github.com/cran/datagovindia)
+> ### **Authors** : 
 >
-> Authors : 
+> > - [Aditya Karan Chhabra](mailto:aditya0chhabra@gmail.com)
 >
-> > - [Aditya Karan Chhabra](https://github.com/addypy)
->
-> > - [Abhishek Arora](https://github.com/econabhishek)
+> > - [Abhishek Arora](mailto:abhishek.arora1996@gmail.com)
