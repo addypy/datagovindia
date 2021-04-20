@@ -539,7 +539,7 @@ class DataGovIndia:
                 self.resource     = None                 
                 self.error_handle = True
                 self.multi_thread = enable_multithreading
-                print('Step (2/2) : Latest API meta-data loaded! You may begin.                                                    ')
+                print('Step (2/2) : Latest API meta-data loaded! You may begin.                                                       \r',end="\n")
         else:
             print("The `data.gov.in` server appears to be down. Please try a little while later.")
     def enable_multithreading(self):
