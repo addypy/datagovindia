@@ -1,6 +1,6 @@
 # **datagovindia**
 
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/) [![Downloads](https://static.pepy.tech/personalized-badge/datagovindia?period=total&units=international_system&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/datagovindia)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 
 ### A Python API-wrapper for Government of India’s [Open Government Data OGD platform](https://data.gov.in/)
 **`datagovindia`** is an API wrapper for > 83,000 APIs (and counting) available at Government of India’s *[Open Government Data OGD platform](https://data.gov.in/ogpl_apis)*
