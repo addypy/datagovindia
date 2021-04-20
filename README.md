@@ -2490,9 +2490,9 @@ datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
 >
 > > - [Abhishek Arora](mailto:abhishek.arora1996@gmail.com)
 >
-> ## **Latest Meta-Data Updates** :
+> ## **Meta-Data Updates** :
 > 
->  > Last Update : ***Tuesday***, **20 April 2021 (IST)**
+>  > Last Updated: ***Tuesday***, **20 April 2021 (IST)**
 >
 >  > Number of active APIs: **83022**
 >
