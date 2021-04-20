@@ -517,10 +517,12 @@ class DataGovIndia:
                 if api_key == "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b":
                     print("This API key is a sample key, and does not have full access.")
                     print("\tFor full access, generate a valid API key here - https://data.gov.in/user",end="\n")
+                    self.is_sample_key  = True
                     pass
                 else:
                     print("This API key is VALID",)            
                     print("\tYou will not need to enter it again.",end="\n")
+                    self.is_sample_key  = False
                     pass
                 self.max_results_per_req = 1000        
                 self.assets       = util.git_assets()
@@ -883,4 +885,8 @@ class DataGovIndia:
         self.resource.set_req_method(num=n)
         self.resource.make_urls()
         data = self.resource.get_data()
+        if self.is_sample_key==True:
+            print("*Warning*\nYou are using a sample API-key. Some observations might have been omitted")
+        else:
+            pass
         return data
