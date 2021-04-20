@@ -61,7 +61,7 @@ datagovin.search(description="Wheat",max_results=1,print_results=True)
 
 ```
 # Returns:
-Showing 1 of 395 matching results      
+1 of 395 results      
 
 ==================================================================================
 
@@ -271,7 +271,7 @@ results = datagovin.search_by_title("MGNREGA",max_results=5,print_results=True)
 
 ```
 # Returns:
-Showing 5 of 45 results for : `MGNREGA`
+5 of 45 results for : `MGNREGA`
 
 ==================================================================================
 
@@ -314,7 +314,7 @@ results = datagovin.search_by_description("Swachh Bharat Mission",max_results=5,
 
 ```
 # Returns:
-Showing 5 of 25 results for : `Swachh Bharat Mission`
+5 of 25 results for : `Swachh Bharat Mission`
 
 ==================================================================================
 
@@ -357,7 +357,7 @@ results = datagovin.search_by_source("tn.data.gov.in",max_results=3,print_result
 
 ```
 # Returns:
-Showing 3 of 526 results for `source` : `tn.data.gov.in`
+3 of 526 results for `source` : `tn.data.gov.in`
 
 ==================================================================================
 
@@ -388,7 +388,7 @@ results = datagovin.search_by_sector("Banking",max_results=3,print_results=True)
 
 ```
 # Returns:
-Showing 3 of 45 results for `sector` : `Banking`
+3 of 45 results for `sector` : `Banking`
 
 ==================================================================================
 
@@ -419,7 +419,7 @@ results = datagovin.search_by_org_name("Ministry of Road Transport and Highways"
 
 ```
 # Returns:
-Showing 5 of 417 results for `organization` - `Ministry of Road Transport and Highways`
+5 of 417 results for `organization` - `Ministry of Road Transport and Highways`
 
 ==================================================================================
 
@@ -462,7 +462,7 @@ results = datagovin.search_by_org_type("State",max_results=5,print_results=True)
 
 ```
 # Returns:
-Showing 5 of 645 results for `organization type` - `State`
+5 of 645 results for `organization type` - `State`
 
 ==================================================================================
 
@@ -513,7 +513,7 @@ results = datagovin.search(title="COVID",
 
 ```
 # Returns:
-Showing 2 of 2 matching results        
+2 of 2 results        
 
 ==================================================================================
 
