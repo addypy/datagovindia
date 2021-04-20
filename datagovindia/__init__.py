@@ -510,21 +510,21 @@ class DataGovIndia:
 
         """
         self.api_key      = "".join([a for a in api_key if a.isalnum()]).lower().strip()
-        print(".... Step (1/2) - Validating API-Key              \r",end="")
+        print(".... Step (1/2) - Validating API-Key                                      \r",end="")
         validation_response = validate_key(self.api_key)
         self.is_key_valid, self.is_server_up = validation_response['APIKEY'], validation_response['SERVER']
         if self.is_server_up==True:
             if self.is_key_valid == False:
-                print("This key - {} is INVALID!\n\tPlease generate a valid API key here - https://data.gov.in/user".format(api_key))            
+                print("This key - {} is INVALID! Please generate a valid API key here - https://data.gov.in/user".format(api_key))            
             elif self.is_key_valid == True:
                 if api_key == self.sample_key:
-                    print("Step (1/2) : This API key is a sample-key with limited access.",end="\n")
+                    print("Step (1/2) : This API key is a sample-key with limited access.    ",end="\n")
                     print("\tFor full access, generate a valid API key here - https://data.gov.in/user",end="\n")
                     self.is_sample_key  = True
                     pass
                 else:
-                    print("Step (1/2) : API key is VALID",end="\n")            
-                    print("\tYou don't need to enter it again",end="\n")
+                    print("Step (1/2) : API key is VALID                               ",end="\n")            
+                    print("\tYou don't need to enter it again                          ",end="\n")
                     self.is_sample_key  = False
                     pass
                 self.max_results_per_req = 1000        
