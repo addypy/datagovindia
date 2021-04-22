@@ -1,6 +1,6 @@
 # **datagovindia**
 
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/addypy/datagovindia/blob/master/LICENSE.txt) [![Downloads](https://static.pepy.tech/personalized-badge/datagovindia?period=total&units=international_system&left_color=grey&right_color=green&left_text=Downloads)](https://pepy.tech/project/datagovindia)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/addypy/datagovindia/blob/master/LICENSE.txt) [![Downloads](https://static.pepy.tech/personalized-badge/datagovindia?period=total&units=international_system&left_color=grey&right_color=limegreen&left_text=Downloads)](https://pepy.tech/project/datagovindia)
 
 
 ### A Python API-wrapper for Government of India’s [Open Government Data OGD platform](https://data.gov.in/)
