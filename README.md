@@ -4,12 +4,12 @@
 
 
 ### A Python API-wrapper for Government of India’s [Open Government Data OGD platform](https://data.gov.in/)
-**`datagovindia`** is an API wrapper for > 84,000 APIs (and counting) available at Government of India’s *[Open Government Data OGD platform](https://data.gov.in/ogpl_apis)*
+**`datagovindia`** is an API wrapper for 86649 (and counting) APIs available at Government of India’s *[Open Government Data OGD platform](https://data.gov.in/ogpl_apis)*
 
 -------
 
 ## Features
-> - **DISCOVERY** 
+> - **DISCOVERY**
 >> *Find the right API resource.*
 > - **INFORMATION**
 >> *Retrieve information about an API resource.*
@@ -19,7 +19,7 @@
 ## Prerequisites
 
 >  - An account on *data.gov.in*
->  - An API key from the My Account page 
+>  - An API key from the My Account page
     - (Instructions here : [Official Guide](https://data.gov.in/help/how-use-datasets-apis))
 
 ## Installation
@@ -50,8 +50,8 @@ datagovin = DataGovIndia("579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac57
 
 > Performs :
 >> 1) Tests datagov.in API-server status.
->> 2) Validates API-Key. You only need to set this once. 
->> 2) Fetches latest details about available APIs. 
+>> 2) Validates API-Key. You only need to set this once.
+>> 2) Fetches latest details about available APIs.
 
 ### Search
 ```python
@@ -121,10 +121,10 @@ api_key = "579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b"
 > ### Initialize Class
 
 ```python
-# Initializing the library - 
+# Initializing the library -
 # 1) Tests datagov.in API-server status.
-# 2) Validates API-Key. You only need to set this once. 
-# 2) Fetches latest details about available APIs. 
+# 2) Validates API-Key. You only need to set this once.
+# 2) Fetches latest details about available APIs.
 
 
 datagovin = DataGovIndia(api_key)
@@ -144,7 +144,7 @@ datagovin = DataGovIndia(api_key)
 ```python
 datagovin.list_org_names()
 
-# Returns: 
+# Returns:
 ['Adi Dravidar and Tribal Welfare Department, Tamil Nadu',
  'Agriculture Department',
  'Agriculture Department, Meghalaya',
@@ -165,17 +165,17 @@ datagovin.list_org_names()
 ```python
 datagovin.list_org_types()
 
-# Returns: 
+# Returns:
 ['Central',
  'City',
  'State']
- 
+
 ```
 ### 3. List of ***`Sectors`***
 ```python
 datagovin.list_sectors()
 
-# Returns: 
+# Returns:
 ['Adult Education',
 'Agricultural',
 'Agricultural Marketing',
@@ -493,7 +493,7 @@ Surat City Complaint Statistics from April 2015 onward (daily)
 
 Resource-ID:    3968cb03596842c9ac43cba988a964c7
 
-Garbage Collection in Surat City (in KG) from April 2015 onward (daily) 
+Garbage Collection in Surat City (in KG) from April 2015 onward (daily)
 
 ==================================================================================
 ```
@@ -540,7 +540,7 @@ COVID-19 Cluster / Containment Zone Details
 >> ### 1. Get all available `meta-data` for an API resource
 
 > Meta-Data includes -
-> 
+>
 > - Resource-ID
 > - Title
 > - Description
@@ -1608,7 +1608,7 @@ datagovin.get_data("b9cfed4ca1a24f7aaffa88a8e1a2149c",
 datagovin.get_data("b9cfed4ca1a24f7aaffa88a8e1a2149c",
                     fields = ["city","zone","age","gender","result"],
                    )
-# Get only the fields you need, by passing a list of valid fields in `fields` 
+# Get only the fields you need, by passing a list of valid fields in `fields`
 ```
 
 <div>
@@ -2425,10 +2425,10 @@ datagovin.get_data("b9cfed4ca1a24f7aaffa88a8e1a2149c",
 --------
 
 > ## H.  `ADVANCED` : Multi-Threading API-requests
->> 
+>>
 >> ### - Multi-Threading is disabled by default.
 >> ### - You can enable multi-threading for faster performance on large datasets.
->> 
+>>
 
 ```python
 datagovin.get_resource_info("dad7a738fd3b437dad31e1f844e9a575")['TotalRecords']
@@ -2471,11 +2471,11 @@ datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
 --------
 
 > ## **Documentation**
-> 
+>
 > - For the Python library, visit -
 >   
 >   > [pypi.org/project/datagovindia/](https://pypi.org/project/datagovindia/)
-> 
+>
 >   > [github.com/addypy/datagovindia](https://github.com/addypy/datagovindia)
 >   
 > - For the R/CRAN package, visit -
@@ -2484,14 +2484,14 @@ datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
 >
 >   > [github.com/econabhishek/datagovindia](https://github.com/econabhishek/datagovindia)
 >
-> ### **Authors** : 
+> ### **Authors** :
 >
 > > - [Aditya Karan Chhabra](mailto:aditya0chhabra@gmail.com)
 >
 > > - [Abhishek Arora](mailto:abhishek.arora1996@gmail.com)
 >
 > ## **Meta-Data Updates** :
-> 
+>
 >  > Last Updated: **May 5, 2021**, `19:12 IST`
 >
 >  > Number of active APIs: **86649**
