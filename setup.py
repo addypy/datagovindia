@@ -3,7 +3,7 @@ from os import path
 
 directory = path.abspath(path.dirname(__file__))
 
-with open(path.join(directory, 'README.md'), encoding='utf-8') as f:
+with open(path.join(directory, 'README.md')) as f:
     long_description = f.read()
 
 setup(
@@ -17,15 +17,15 @@ setup(
     url='https://pypi.org/project/datagovindia/',
     download_url = "https://github.com/addypy/datagovindia/",
     license='MIT',
-    description="Python API-wrapper for Government of India’s Open Government Data (OGD) platform - data.gov.in",
+    description='Python API wrapper for Government of India Open Government Data (OGD) platform data.gov.in',
     long_description=long_description,
     long_description_content_type='text/markdown',
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Topic :: Database",
-        "Intended Audience :: Science/Research",        
+        "Intended Audience :: Science/Research",
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3',  
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
@@ -35,11 +35,10 @@ setup(
         'Programming Language :: Python :: 3.8',
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
         "Natural Language :: English",
-        "Operating System :: OS Independent",        
+        "Operating System :: OS Independent",     
     ],   
-    keywords='india government opendata ogd ogd-india datagovin',
+    keywords='india government opendata ogd ogdindia datagovin',
     install_requires=[
            "requests",
             "numpy",
