@@ -263,7 +263,131 @@ datagovin.list_all_attributes()
                "Water ways"]
                }
 ```
->> ### *Searching for a dataset (API-Resource)*
+
+### 6. List of ***`recently created resources`***
+
+```python
+datagovin.list_recently_created(days=5,max_results=5,print_results=True)
+```
+```
+# Prints:
+
+5 of 1443 results that were created in the last - `5` days
+
+==================================================================================
+
+Resource-ID:	52d2933f69be46fda28855c08134fc7f
+18 June 2021, 09:57 AM
+Allocations for The Welfare of Schedule Caste from 2019-20 to 2021-22
+
+==================================================================================
+
+Resource-ID:	2ef7903b77f04609af93bb54516c125c
+18 June 2021, 09:57 AM
+Allocations for The Welfare of Schedule Tribes from 2019-20 to 2021-22
+
+==================================================================================
+
+Resource-ID:	8a679d8db6d94605a1d160150fe22b77
+18 June 2021, 09:57 AM
+Allocations for the Welfare of Children from 2019-20 to 2021-22
+
+==================================================================================
+
+Resource-ID:	243825f60f304a10877dd1f86ad49598
+18 June 2021, 09:27 AM
+Monthly Range-wise Performance of Public Facilities for Deliveries conducted at facility for May 2013-14
+
+==================================================================================
+
+Resource-ID:	a5d0bd7d39e84392b65abe5e4737f865
+18 June 2021, 09:26 AM
+Monthly Range-wise Performance of Public Facilities for Deliveries conducted at facility for September 2018-19
+
+==================================================================================
+```
+```json
+# Returns:
+[{"resourceid": "52d2933f69be46fda28855c08134fc7f",
+  "timestamp": 1623990466,
+  "title": "Allocations for The Welfare of Schedule Caste from 2019-20 to 2021-22"},
+ {"resourceid": "2ef7903b77f04609af93bb54516c125c",
+  "timestamp": 1623990466,
+  "title": "Allocations for The Welfare of Schedule Tribes from 2019-20 to 2021-22"},
+ {"resourceid": "8a679d8db6d94605a1d160150fe22b77",
+  "timestamp": 1623990441,
+  "title": "Allocations for the Welfare of Children from 2019-20 to 2021-22"},
+ {"resourceid": "243825f60f304a10877dd1f86ad49598",
+  "timestamp": 1623988620,
+  "title": "Monthly Range-wise Performance of Public Facilities for Deliveries conducted at facility for May 2013-14"},
+ {"resourceid": "a5d0bd7d39e84392b65abe5e4737f865",
+  "timestamp": 1623988618,
+  "title": "Monthly Range-wise Performance of Public Facilities for Deliveries conducted at facility for September 2018-19"}]
+```
+
+### 7. List of ***`recently updated resources`***
+```python
+datagovin.list_recently_updated(days=3,max_results=5,print_results=True)
+
+```
+```
+# Prints:
+
+5 of 303 results that were updated in the last - `3` days
+
+==================================================================================
+
+Resource-ID:	9ef84268d588465aa308a864a43d0070
+21 June 2021, 02:05 PM
+Current Daily Price of Various Commodities from Various Markets (Mandi)
+
+==================================================================================
+
+Resource-ID:	3b01bcb80b144abfb6f2c1bfd384ba69
+21 June 2021, 12:03 PM
+Real time Air Quality Index from various location
+
+==================================================================================
+
+Resource-ID:	d76a86b16a2a4ab39201cb9f6bc61fa4
+21 June 2021, 08:50 AM
+District Wise Total MSME Registered Service Enterprises till last date
+
+==================================================================================
+
+Resource-ID:	925bb7dd50f048768a1da5e45c4a989a
+21 June 2021, 08:50 AM
+District Wise Total MSME Registered Manufacturing and Service Enterprises till last date
+
+==================================================================================
+
+Resource-ID:	201b66f27fda40b8b613ffb7789c4341
+21 June 2021, 08:50 AM
+District Wise Total MSME Registered Manufacturing Enterprises till last date
+
+==================================================================================
+```
+
+```json
+# Returns:
+[{"resourceid": "9ef84268d588465aa308a864a43d0070",
+  "timestamp": 1624264506,
+  "title": "Current Daily Price of Various Commodities from Various Markets (Mandi)"},
+ {"resourceid": "3b01bcb80b144abfb6f2c1bfd384ba69",
+  "timestamp": 1624257197,
+  "title": "Real time Air Quality Index from various location"},
+ {"resourceid": "d76a86b16a2a4ab39201cb9f6bc61fa4",
+  "timestamp": 1624245637,
+  "title": "District Wise Total MSME Registered Service Enterprises till last date"},
+ {"resourceid": "925bb7dd50f048768a1da5e45c4a989a",
+  "timestamp": 1624245633,
+  "title": "District Wise Total MSME Registered Manufacturing and Service Enterprises till last date"},
+ {"resourceid": "201b66f27fda40b8b613ffb7789c4341",
+  "timestamp": 1624245629,
+  "title": "District Wise Total MSME Registered Manufacturing Enterprises till last date"}]
+```
+## Searching for a dataset (API-Resource)
+---
 ### 1. *Search* for resource using **`TITLE`**
 
 ```python
