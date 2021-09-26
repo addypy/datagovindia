@@ -2616,7 +2616,7 @@ datagovin.get_data("dad7a738fd3b437dad31e1f844e9a575",num_results='all')
 >
 > ## **Meta-Data Updates** :
 >
->  > Last Updated: **September 26, 2021**, `02:03 IST`
+>  > Last Updated: **September 26, 2021**, `14:03 IST`
 >
 >  > Number of active APIs: **114701**
 >
