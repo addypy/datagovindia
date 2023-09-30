@@ -1,0 +1,31 @@
+*.log
+*.pot
+*.pyc
+*.mypy_cache
+__pycache__
+__pycache__/
+local_settings.py
+media
+*.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+datagovindia.egg-info
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+build
+build/
+dist
+dist/
+*.egg-info
+
