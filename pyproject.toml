@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=61.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["datagovindia"]
+package-dir = {"" = "src"}
+
+[project]
+name = "datagovindia"
+version = "1.0.0"
+description = "Python API wrapper for Government of India Open Government Data (OGD) platform data.gov.in"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Aditya Karan Chhabra", email = "aditya0chhabra@gmail.com" },
+    { name = "Arijit Basu", email = "hi@arijitbasu.in" },
+    { name = "Abhishek Arora" }
+]
+maintainers = [
+    { name = "Aditya Karan Chhabra", email = "aditya0chhabra@gmail.com" },
+    { name = "Arijit Basu", email = "hi@arijitbasu.in" }
+]
+
+keywords = ["data-gov-in","indian-government-data","open-data-india","public-datasets","indian-datasets","government-api","india-statistics","ogd-platform"]
+
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Database",
+    "Intended Audience :: Education",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Natural Language :: English",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "click >=8.0.0",
+    "pandas >=1.2.0",
+    "python-dateutil >=2.8.0",
+    "requests >=2.25.0",
+    "numpy"
+]
+
+[project.urls]
+homepage   = "https://pypi.org/project/datagovindia/"
+repository = "https://github.com/addypy/datagovindia/"
+
+[project.entry-points.console_scripts]
+datagovindia = "datagovindia.cli:cli"
