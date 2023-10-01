@@ -22,7 +22,7 @@ maintainers = [
     { name = "Arijit Basu", email = "hi@arijitbasu.in" }
 ]
 
-keywords = ["data-gov-in","indian-government-data","open-data-india","public-datasets","indian-datasets","government-api","india-statistics","ogd-platform"]
+keywords = ["data.gov.in","indian-government-data","open-data-india","public-datasets","indian-datasets","government-api","india-statistics","ogd-platform"]
 
 classifiers = [
     "License :: OSI Approved :: MIT License",

@@ -1,14 +1,13 @@
 <div align="center">
 
-# **datagovindia**
+# datagovindia
 
 [![MIT license](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/addypy/datagovindia/blob/master/LICENSE) ![PyPI - Version](https://img.shields.io/pypi/v/datagovindia?color=green) [![Downloads](https://static.pepy.tech/personalized-badge/datagovindia?period=total&units=international_system&left_color=gray&left_text=Downloads)](https://pepy.tech/project/datagovindia) 
 
 
+## Python Client for Government of India’s [Open Government Data OGD platform](https://data.gov.in/) API
 
-## Python API-wrapper for Government of India’s [Open Government Data OGD platform](https://data.gov.in/)
-
-**`datagovindia`** is a client library for accessing resources from the Government of India’s Open Government Data OGD platform. It provides a simple and intuitive interface to search, discover and download data from the platform.
+**`datagovindia`** is a Python client library for accessing resources from the Government of India’s Open Government Data OGD platform. It provides a simple and intuitive interface to search, discover and download data from the platform.
 
 </div>
 
@@ -174,42 +173,6 @@ $ datagovindia search mgnrega --preview --limit 5
             <td>[&#39;All&#39;]</td>
             <td>2021-03-04T04:45:12+00:00</td>
             <td>2021-03-23T13:10:05+00:00</td>
-        </tr>
-        <tr>
-            <td>a1c9803c-d405-4edf-a298-ee42e7e65d0b</td>
-            <td>State/UT-wise Households Completing 100 days of Employment under Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA) from 2016-17 to 2018-19 (From : Ministry of Rural Development)</td>
-            <td>State/UT-wise Households Completing 100 days of Employment under Mahatma Gandhi National Rural Employment Guarantee Act (MGNREGA) from 2016-17 to 2018-19 (From : Ministry of Rural Development)</td>
-            <td>Central</td>
-            <td>[&#39;document_id&#39;, &#39;sl__no_&#39;, &#39;states_uts&#39;, &#39;__2016_17&#39;, &#39;_2017_18&#39;, &#39;_2018_19&#39;, &#39;resource_uuid&#39;]</td>
-            <td>[&#39;Rajya Sabha&#39;]</td>
-            <td>data.gov.in</td>
-            <td>[&#39;All&#39;]</td>
-            <td>2021-03-04T04:17:04+00:00</td>
-            <td>2021-03-23T12:47:05+00:00</td>
-        </tr>
-        <tr>
-            <td>bf1da9fc-5650-45c3-be3b-0ba006377869</td>
-            <td>Expenditure under MGNREGA on Schedule Caste (SC) Persondays during 2015-16 and 2018-19 (From: Ministry of Rural Development)</td>
-            <td>Expenditure under MGNREGA on Schedule Caste (SC) Persondays during 2015-16 and 2018-19 (From: Ministry of Rural Development)</td>
-            <td>Central</td>
-            <td>[&#39;document_id&#39;, &#39;financial_year&#39;, &#39;approximate_expenditure&#39;, &#39;resource_uuid&#39;]</td>
-            <td>[&#39;Rajya Sabha&#39;]</td>
-            <td>data.gov.in</td>
-            <td>[&#39;All&#39;]</td>
-            <td>2021-03-04T03:47:13+00:00</td>
-            <td>2021-03-23T12:22:45+00:00</td>
-        </tr>
-        <tr>
-            <td>7b502fe1-6684-4c4c-9347-57d20af7d4dc</td>
-            <td>Details of Funds Allocated under MGNREGA from 2014-15 to 2018-19 (From: Ministry of Rural Development)</td>
-            <td>Details of Funds Allocated under MGNREGA from 2014-15 to 2018-19 (From: Ministry of Rural Development)</td>
-            <td>Central</td>
-            <td>[&#39;document_id&#39;, &#39;s_no_&#39;, &#39;_year&#39;, &#39;budget_allocation&#39;, &#39;resource_uuid&#39;]</td>
-            <td>[&#39;Rajya Sabha&#39;]</td>
-            <td>data.gov.in</td>
-            <td>[&#39;All&#39;]</td>
-            <td>2021-03-04T03:30:03+00:00</td>
-            <td>2021-03-23T12:08:45+00:00</td>
         </tr>
     </tbody>
 </table>
