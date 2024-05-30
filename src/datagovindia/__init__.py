@@ -11,14 +11,34 @@ import pandas as pd
 import multiprocessing as mp
 from typing import List, Dict
 from urllib.parse import urlencode
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from datetime import datetime
 from dateutil.parser import parse as dateutil_parse
+from collections.abc import Iterable
+from urllib.parse import urlencode
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+__version__ = "0.1.0"
+
+def flatten(lst):
+    """Flatten a nested list"""
+    for item in lst:
+        if isinstance(item, Iterable) and not isinstance(item, str):
+            yield from flatten(item)
+        else:
+            yield item
 def construct_url(params: dict) -> str:
     """
     Construct URL with query parameters.
     """
-    return "https://api.data.gov.in/lists" + "?" + "&".join([f"{k}={v}" for k, v in params.items()])
+    base_url = "https://api.data.gov.in/lists"
+    query_string = urlencode(params)
+    return f"{base_url}?{query_string}"
 
 def remove_special_chars(s: str) -> str:
     """
@@ -96,10 +116,10 @@ def compile_record_info(record: dict) -> dict:
         "title": record.get("title"),
         "description": record.get("desc"),
         "org_type": record.get("org_type"),
-        "fields": " | ".join([f.get("id", "") for f in record.get("field", [])]),
-        "orgs": " | ".join(record.get("org", [])),
+        "fields": " | ".join(str(f.get("id", "")) for f in record.get("field", [])),
+        "orgs": " | ".join(str(item) for item in flatten(record.get("org", []))),
         "source": record.get("source"),
-        "sectors": " | ".join(record.get("sector", [])),
+        "sectors": " | ".join(str(item) for item in record.get("sector", [])),
         "date_created": format_date(record.get("created_date")),
         "date_updated": format_date(record.get("updated_date")),
     }
@@ -133,18 +153,38 @@ def _fetch_metadata(api_key: str, start: int = 0, end: int = 1000) -> list:
         "limit": end - start,
     }
     api_url = construct_url(params)
-    resp = requests.get(api_url, timeout=(5, 10))
-    return [compile_record_info(record) for record in resp.json()["records"]]
 
+    session = requests.Session()
+    retry_strategy = Retry(
+        total=5,
+        backoff_factor=2,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"]
+    )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+
+    try:
+        resp = session.get(api_url, timeout=(30, 60))
+        resp.raise_for_status()
+        logger.info(f"Successfully fetched data for range ({start}-{end}")
+        return [compile_record_info(record) for record in resp.json().get("records", [])]
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Request failed for range ({start}-{end}): {e}")
+        return []
+    
 def fetch_metadata_records(
-    api_key:str, start: int = 0, end: int = 1000000, batch_size: int = 100, njobs: int = None
+    api_key: str, start: int = 0, end: int = 1000000, batch_size: int = 100, njobs: int = None
 ) -> list:
     """Retrieve records using multiple threads."""
     with mp.Pool(njobs) as pool:
         data = pool.starmap(
             _fetch_metadata, [(api_key, i, min(end, i + batch_size)) for i in range(start, end, batch_size)]
         )
-    return [item for sublist in data for item in sublist]
+    # Filter out None results
+    data = [item for sublist in data if sublist is not None for item in sublist]
+    return data
 
 def get_api_info(url) -> dict:
     """Get json data from url"""
@@ -288,6 +328,7 @@ class DataGovIndia:
                 "DATAGOVINDIA_DB_PATH", os.path.join(os.path.expanduser("~"), "datagovindia.db")
             )
         self.connect(verify=False)
+        
 
     def validate_api_key(self):
         if not self.api_key:
@@ -565,13 +606,27 @@ class DataGovIndia:
         placeholders = ", ".join(["?"] * len(data_dicts[0]))
         columns = ", ".join(data_dicts[0].keys())
         sql = f"""INSERT OR REPLACE INTO {table_name} 
-                  ({columns}) 
-                  VALUES ({placeholders})"""
-        self.cursor.executemany(sql, [tuple(data_dict.values()) for data_dict in data_dicts])
+                ({columns}) 
+                VALUES ({placeholders})"""
+        
+        # Convert all values to supported types and log them
+        def convert_value(value):
+            if isinstance(value, (str, int, float, type(None))):
+                return value
+            return str(value)  # Convert unsupported types to strings
+        
+        data_values = []
+        for data_dict in data_dicts:
+            converted_values = tuple(convert_value(v) for v in data_dict.values())
+            logger.debug(f"Inserting values: {converted_values}")
+            data_values.append(converted_values)
+        
+        self.cursor.executemany(sql, data_values)
         self.conn.commit()
         self.close()
+        
 
-    def sync_metadata(self, batch_size=2500, njobs=None):
+    def sync_metadata(self, batch_size=1000, njobs=None): # Reducing batch_size to 1000 to avoid timeout errors
         """Updates metadata in datagovindia.db sqlite database
 
         Parameters
@@ -592,13 +647,13 @@ class DataGovIndia:
         _num_updated = 0
 
         self.create_tables()
-        njobs = mp.cpu_count() if njobs is None else njobs
+        njobs  = mp.cpu_count() if njobs is None else njobs
         _batch = njobs * batch_size
 
         display_progress_bar(_num_updated, _num_available)
 
         for start in range(0, _num_available, _batch):
-            end = min(_num_available, start + _batch)
+            end     = min(_num_available, start + _batch)
             records = fetch_metadata_records(
                 self.api_key, start=start, end=end, batch_size=batch_size, njobs=njobs
             )
@@ -606,12 +661,12 @@ class DataGovIndia:
             _num_updated += len(records)
 
             # Calculate ETA
-            elapsed_time = time.time() - start_time
-            avg_time     = elapsed_time / _num_updated
+            elapsed_time   = time.time() - start_time
+            avg_time       = elapsed_time / _num_updated
             _num_remaining = (_num_available - _num_updated) 
             eta = avg_time * _num_remaining
             display_progress_bar(_num_updated, _num_available, eta=format_seconds(eta))
 
         total_time = time.time() - start_time
-        print(f"\nFinished updating {_num_updated} records in {round(total_time)} seconds.")
+        logger.info(f"\nTotal time taken: {format_seconds(total_time)} to update {_num_updated} resources.")
         self._save_update_info(_num_updated)

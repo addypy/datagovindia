@@ -8,7 +8,7 @@ package-dir = {"" = "src"}
 
 [project]
 name = "datagovindia"
-version = "1.0.0"
+version = "1.0.1"
 description = "Python API wrapper for Government of India Open Government Data (OGD) platform data.gov.in"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -22,7 +22,7 @@ maintainers = [
     { name = "Arijit Basu", email = "hi@arijitbasu.in" }
 ]
 
-keywords = ["data.gov.in","indian-government-data","open-data-india","public-datasets","indian-datasets","government-api","india-statistics","ogd-platform"]
+keywords = ["data.gov.in", "indian-government-data", "open-data-india", "public-datasets", "indian-datasets", "government-api", "india-statistics", "ogd-platform"]
 
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -43,16 +43,15 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 dependencies = [
-    "click >=8.0.0",
-    "pandas >=1.2.0",
-    "python-dateutil >=2.8.0",
-    "requests >=2.25.0",
-    "numpy"
+    "click>=8.0.0",
+    "requests",
+    "pandas",
+    "python-dateutil"
 ]
 
 [project.urls]
-homepage   = "https://pypi.org/project/datagovindia/"
+homepage = "https://pypi.org/project/datagovindia/"
 repository = "https://github.com/addypy/datagovindia/"
 
-[project.entry-points.console_scripts]
+[project.scripts]
 datagovindia = "datagovindia.cli:cli"

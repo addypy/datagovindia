@@ -19,6 +19,13 @@ def cli():
 
     """    
 
+@cli.command(name="version")
+def version():
+    """Displays the version of the DataGovIndia API wrapper."""
+    from datagovindia import __version__
+
+    click.echo(f"datagovindia v{__version__}")
+
 ################## sync-metadata ##################
 @cli.command(name="sync-metadata")
 @click.option(
@@ -173,13 +180,13 @@ def search_cli(query, api_key, db_path, output, preview, limit, fields, sort_by,
     click.echo(f"Searching for '{query}' in fields {fields}...")
     search_df = datagovin.search(query, search_fields=fields, sort_by=sort_by, ascending=asc)
 
-    if output:
-        save_dataframe(search_df, output)
-        click.echo(f"{len(search_df)} results saved to '{output}'.")
-
     if preview:
         click.echo(search_df.head(limit))
         click.echo(f"{len(search_df)} results found.")
+
+    if output:
+        save_dataframe(search_df, output)
+        click.echo(f"{len(search_df)} results saved to '{output}'.")
 
     else:
         click.echo(f"{len(search_df)} results found.")
