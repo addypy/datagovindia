@@ -3,9 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+*.ipynb
 # C extensions
 *.so
-
+.env
+*.db
 # Distribution / packaging
 .Python
 build/

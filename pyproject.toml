@@ -8,7 +8,7 @@ package-dir = {"" = "src"}
 
 [project]
 name = "datagovindia"
-version = "1.0.1"
+version = "1.0.2"
 description = "Python API wrapper for Government of India Open Government Data (OGD) platform data.gov.in"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -39,14 +39,17 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Natural Language :: English",
     "Operating System :: OS Independent"
 ]
 dependencies = [
-    "click>=8.0.0",
     "requests",
     "pandas",
-    "python-dateutil"
+    "python-dateutil",
+    "click>=8.0.0",
+    "tenacity>=6.3.0"
+
 ]
 
 [project.urls]

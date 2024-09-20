@@ -6,24 +6,34 @@ import re
 import sys
 import time
 import requests
+import signal
 import sqlite3
 import pandas as pd
 import multiprocessing as mp
 from typing import List, Dict
 from urllib.parse import urlencode
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 from datetime import datetime
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type, RetryError
 from dateutil.parser import parse as dateutil_parse
 from collections.abc import Iterable
 from urllib.parse import urlencode
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-__version__ = "0.1.0"
+__version__ = "1.0.2"
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=5, max=60),
+    retry=retry_if_exception_type(requests.exceptions.RequestException),
+)
+def make_request_with_retry(url: str, **kwargs) -> requests.Response:
+    response = requests.get(url, timeout=(kwargs.get("timeout", 10), kwargs.get("timeout", 30)))
+    response.raise_for_status()
+    return response
 
 def flatten(lst):
     """Flatten a nested list"""
@@ -32,7 +42,8 @@ def flatten(lst):
             yield from flatten(item)
         else:
             yield item
-def construct_url(params: dict) -> str:
+
+def construct_url_for_lists(params: dict) -> str:
     """
     Construct URL with query parameters.
     """
@@ -40,11 +51,108 @@ def construct_url(params: dict) -> str:
     query_string = urlencode(params)
     return f"{base_url}?{query_string}"
 
+def get_total_available_resources() -> int:
+    """Retrieve total number of available records."""
+    params = {
+        "format": "json",
+        "notfilters[source]": "visualize.data.gov.in",
+        "filters[active]": 1,
+        "offset": 0,
+        "limit": 0,
+    }
+    api_url = construct_url_for_lists(params)
+    api_response = make_request_with_retry(api_url)
+    return api_response.json()["total"]
+    
+def _fetch_metadata(api_key: str, start: int = 0, end: int = 1000) -> list:
+    """Retrieve records using single thread."""
+    params = {
+        "api-key": api_key,
+        "notfilters[source]": "visualize.data.gov.in",
+        "filters[active]": 1,
+        "sort[updated]": "desc",
+        "format": "json",
+        "offset": start,
+        "limit": end - start,
+    }
+    api_url = construct_url_for_lists(params)
+
+    try:
+        resp = make_request_with_retry(api_url)
+        resp.raise_for_status()
+        # logger.info(f"Successfully fetched data for range ({start}-{end}")
+        return [compile_record_info(record) for record in resp.json().get("records", [])]
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Request failed for range ({start}-{end}): {e}")
+        raise
+
+
+
+
+def build_url(
+    api_key: str,
+    resource_id: str,
+    offset: int = 0,
+    limit: int = 1000,
+    filters: Dict[str, str] = None,
+    fields: List[str] = None,
+    sort_by: str = None,
+    sort_order: str = "asc",
+) -> str:
+    """Build url to fetch data from data.gov.in
+
+        api_key: (str) - API key for data.gov.in
+        resource_id: (str) - Unique identifier of the resource.
+        offset: (int) - Offset of the records to be fetched. Defaults to 0.
+        limit: (int) - Number of records to be fetched. Defaults to 1000.
+        filters: (dict) - Filters to be applied on the records, should be a list of dicts of the form {<field>:<value>}. Defaults to {}.
+        fields: (list) - Fields to be fetched. Defaults to [].
+        sort_by: (str) - Field to sort results by. Defaults to None.
+        sort_order: (str) - Order of sorting. Defaults to "asc". Only applicable if sort_by is not None.
+
+    Returns: (str) - Url to fetch data from data.gov.in
+    """
+    base_url = f"https://api.data.gov.in/resource/{resource_id}"
+    params = {"api-key": api_key, "format": "json", "offset": offset, "limit": limit}
+    if fields:
+        params["fields"] = ",".join(fields)
+    if sort_by:
+        params[f"sort[{sort_by}]"] = sort_order or "asc"
+    if filters:
+        params.update({f"filters[{k}]": v for k, v in filters.items()})
+    url = base_url + "?" + urlencode(params, doseq=True, safe="\],\[")
+    return url
+
+def check_api_key(api_key: str) -> bool:
+    """Check if API key is valid by making a request to the API for 1 record."""
+    params = {
+        "api-key": api_key,
+        "format": "json",
+        "offset": 0,
+        "limit": 1,
+    }
+    api_url = construct_url_for_lists(params)
+    resp    = requests.get(api_url)
+    # Get 1 record to check if the API key is valid
+    resource_id = resp.json().get("records", [{}])[0].get("index_name")
+    if resource_id:
+        url = build_url(api_key=api_key,resource_id=resource_id, limit=1)
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            return True
+        except requests.exceptions.RequestException:
+            return False
+    else:
+        return False
+
+
+
 def remove_special_chars(s: str) -> str:
     """
     Remove special characters from string.
     """
-    return re.sub("[^a-zA-Z0-9\.]", "", s).strip().lower() # type: ignore
+    return re.sub("[^a-zA-Z0-9\.]", "", s).strip().lower()  # type: ignore
 
 def regexmatch(text: str, query: str) -> bool:
     """Search for 'query' within 'text' using regex"""
@@ -124,71 +232,49 @@ def compile_record_info(record: dict) -> dict:
         "date_updated": format_date(record.get("updated_date")),
     }
 
-def get_total_available_resources() -> int:
-    """
-    Retrieve total number of available records.
-    """
-    params = {
-        "format": "json",
-        "notfilters[source]": "visualize.data.gov.in",
-        "filters[active]": 1,
-        "offset": 0,
-        "limit": 0,
-    }
-    api_url = construct_url(params)
-    api_response = requests.get(api_url, timeout=(5, 10))
-    return api_response.json()["total"]
 
-def _fetch_metadata(api_key: str, start: int = 0, end: int = 1000) -> list:
-    """
-    Retrieve records using single thread.
-    """
-    params = {
-        "api-key": api_key,
-        "notfilters[source]": "visualize.data.gov.in",
-        "filters[active]": 1,
-        "sort[updated]": "desc",
-        "format": "json",
-        "offset": start,
-        "limit": end - start,
-    }
-    api_url = construct_url(params)
+def init_worker():
+    """Ignore SIGINT in worker processes to let the parent handle it."""
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-    session = requests.Session()
-    retry_strategy = Retry(
-        total=5,
-        backoff_factor=2,
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET"]
-    )
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-    session.mount("https://", adapter)
-    session.mount("http://", adapter)
-
-    try:
-        resp = session.get(api_url, timeout=(30, 60))
-        resp.raise_for_status()
-        logger.info(f"Successfully fetched data for range ({start}-{end}")
-        return [compile_record_info(record) for record in resp.json().get("records", [])]
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Request failed for range ({start}-{end}): {e}")
-        return []
-    
 def fetch_metadata_records(
     api_key: str, start: int = 0, end: int = 1000000, batch_size: int = 100, njobs: int = None
 ) -> list:
-    """Retrieve records using multiple threads."""
-    with mp.Pool(njobs) as pool:
+    """Retrieve records using multiple threads with graceful handling of KeyboardInterrupt."""
+    njobs = max(1, mp.cpu_count() if njobs is None else njobs)
+    pool = mp.Pool(njobs, initializer=init_worker)  # Initialize worker with SIGINT ignored
+
+    try:
         data = pool.starmap(
             _fetch_metadata, [(api_key, i, min(end, i + batch_size)) for i in range(start, end, batch_size)]
         )
-    # Filter out None results
+    except KeyboardInterrupt:
+        # If interrupted, terminate the pool and wait for processes to finish
+        logger.info("KeyboardInterrupt: Terminating workers...")
+        pool.terminate()  # Terminate all running workers
+        pool.join()  # Wait for workers to terminate
+        logger.info("All workers terminated.")
+        sys.exit(1)
+    else:
+        # Close the pool normally if no interruption occurs
+        pool.close()
+        pool.join()
+
+    # Flatten the data after processing
     data = [item for sublist in data if sublist is not None for item in sublist]
     return data
 
+
 def get_api_info(url) -> dict:
     """Get json data from url"""
-    response = requests.get(url, timeout=(5, 10)).json()
+    try:
+        response = make_request_with_retry(url)
+        response.raise_for_status()
+    except RetryError as e:
+        logger.error(f"Failed to fetch data: {e}")
+        return {}
+    data = response.json()
+
     skip_keys = [
         "message",
         "version",
@@ -202,10 +288,15 @@ def get_api_info(url) -> dict:
         "target_bucket",
     ]
     boolean_keys = ["visualizable", "active"]
+
     for key in boolean_keys:
-        response[key] = True if response[key] == "1" else False
-    response = {k: v for k, v in response.items() if k not in skip_keys}
-    return response
+        if key in data:
+            try:
+                data[key] = bool(int(data[key]))
+            except (ValueError, TypeError):
+                data[key] = data[key]
+    data = {k: v for k, v in data.items() if k not in skip_keys}
+    return data
 
 def save_dataframe(df, filepath):
     """Save dataframe to filepath"""
@@ -220,11 +311,11 @@ def save_dataframe(df, filepath):
     elif file_extension == ".xlsx":
         df.to_excel(filepath, index=False)
     else:
-        raise ValueError(f"Invalid file extension: {file_extension}")    
+        raise ValueError(f"Invalid file extension: {file_extension}")
 
-def get_api_records(url:str, **kwargs) -> list:
+def get_api_records(url: str, **kwargs) -> list:
     """Get json data from url"""
-    response = requests.get(url, **kwargs)
+    response = make_request_with_retry(url, **kwargs)
     response.raise_for_status()
     data = response.json()
     if "records" not in data:
@@ -233,183 +324,104 @@ def get_api_records(url:str, **kwargs) -> list:
         return data["records"]
 
 def get_data_njobs(url_list: list, njobs=None) -> list:
-    """Get record data from url_list using njobs"""
+    """Get record data from url_list using njobs with graceful handling of KeyboardInterrupt."""
     if njobs is None:
         njobs = mp.cpu_count()
-    with mp.Pool(njobs) as pool:
+    
+    pool = mp.Pool(njobs, initializer=init_worker)  # Initialize worker with SIGINT ignored
+    
+    try:
         data = pool.map(get_api_records, url_list)
-    # Flatten list of lists
+    except KeyboardInterrupt:
+        # If interrupted, log the event and terminate the pool
+        logger.warning("Received KeyboardInterrupt, terminating workers...")
+        pool.terminate()  # Terminate all running workers
+        pool.join()  # Wait for workers to terminate
+        logger.info("All workers terminated.")
+        sys.exit(1)
+    else:
+        # Close the pool normally if no interruption occurs
+        pool.close()
+        pool.join()
+
+    # Flatten the data after processing
     data = [item for sublist in data for item in sublist]
     return data
 
-def build_url(
-    api_key: str,
-    resource_id: str,
-    offset: int = 0,
-    limit: int = 1000,
-    filters: Dict[str, str] = None,
-    fields: List[str] = None,
-    sort_by: str = None,
-    sort_order: str = "asc",
-) -> str:
-    """Build url to fetch data from data.gov.in
-
-    Parameters
-    ----------
-
-    api_key: (str) (required)
-        API key for data.gov.in
-
-    resource_id: (str) (required)
-        Unique identifier of the resource.
-
-    offset: (int) (optional)
-        Offset of the records to be fetched. Defaults to 0.
-
-    limit: (int) (optional)
-        Number of records to be fetched. Defaults to 1000.
-
-    filters: (dict) (optional)
-        Filters to be applied on the records, should be a list of dicts of the form {<field>:<value>}.
-        Defaults to {}.
-
-    fields: (list) (optional)
-        Fields to be fetched. Defaults to [].
-
-    sort_by: (str) (optional)
-        Field to sort results by. Defaults to None.
-
-    sort_order: (str) (optional)
-        Order of sorting. Defaults to "asc". Only applicable if sort_by is not None.
-
-    Returns
-    -------
-
-    url: str
-        Url to fetch data from data.gov.in
-    """
-    params = {"api-key": api_key, "format": "json", "offset": offset, "limit": limit}
-    if fields:
-        params["fields"] = ",".join(fields)
-    if sort_by:
-        params[f"sort[{sort_by}]"] = sort_order or "asc"
-    if filters:
-        params.update({f"filters[{k}]": v for k, v in filters.items()})
-    url = f"https://api.data.gov.in/resource/{resource_id}" + "?" + urlencode(params, doseq=True, safe="\],\[")
-    return url
-
 class DataGovIndia:
     """Python API-wrapper for Government of India’s [Open Government Data OGD platform](https://data.gov.in/)"""
-    def __init__(self, api_key:str=None, db_path:str=None) -> None:
-        """
-        Initialize DataGovIndia object
 
-        Parameters
-        ----------
+    def __init__(self, api_key: str = None, db_path: str = None, validate_key: bool = False):
+        """Initialize DataGovIndia object
 
-        api_key: str (optional)
+        api_key: str
             API key for data.gov.in. If not provided, it will be read from the environment variable DATAGOVINDIA_API_KEY
             If not found, it will raise an error.
 
-        db_path: str (optional)
+        db_path: str
             Required only for searching the database.
             Path to the database file. If not provided, it will be read from the environment variable DATAGOVINDIA_DB_PATH
             If not found, it will be set to ~/datagovindia.db
-        """
-        if api_key:
-            self.api_key = api_key
-        else:
-            self.api_key = os.environ.get("DATAGOVINDIA_API_KEY")
-
-        if db_path:
-            self.db_path = db_path
-        else:
-            self.db_path = os.environ.get(
-                "DATAGOVINDIA_DB_PATH", os.path.join(os.path.expanduser("~"), "datagovindia.db")
-            )
-        self.connect(verify=False)
         
+        """
+        self.api_key = api_key or os.environ.get("DATAGOVINDIA_API_KEY")
+        self.db_path = db_path or os.environ.get(
+            "DATAGOVINDIA_DB_PATH", os.path.join(os.path.expanduser("~"), "datagovindia.db")
+        )
+        if validate_key:            
+            self.validate_api_key()
 
     def validate_api_key(self):
         if not self.api_key:
-            raise ValueError("API key not found. Please set it as an environment variable `DATAGOVINDIA_API_KEY` or pass it as an argument while initializing the DataGovIndia object.")
-
-    def connect(self, verify:bool=False):
-        """Connect to datagovindia.db sqlite database"""
-        self.conn = sqlite3.connect(self.db_path)
-        self.conn.create_function("regexmatch", 2, regexmatch)
-        self.cursor = self.conn.cursor()
-            # check whether the table exists
-        if verify:
-            self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='resources'")
-            if (self.cursor.fetchone() is None):
-                raise ValueError(f"""
-                    Could not find tables in {self.db_path}.
-                    If this is the first time you are using this package, please run the following commands:
-                        >>> from datagovindia import DataGovIndia                    
-                        >>> data_gov = DataGovIndia()
-                        >>> data_gov.update_metadata()
-                        """
-                )
-    def close(self):
-        """Close connection to datagovindia.db sqlite database"""
-        self.conn.close()
-
-    def search(self, query:str, search_fields: list=["title"], sort_by:str=None, ascending:bool=True) -> pd.DataFrame:
-        """Search for a query in the database.
-
-        Parameters
-        ----------
-
-        query: str (required)
-            Search query to be searched in the database.
-
-        search_fields: list (optional)
-            List of fields to search in. Defaults to ['title'].
-            Valid fields are: ['title', 'description', 'org_type', 'fields', 'orgs', 'source', 'sectors', 'date_created', 'date_updated']
-
-        sort_by: str (optional)
-            Field to sort results by. Defaults to None.
-            Valid fields are: ['title', 'description', 'org_type', 'fields', 'orgs', 'source', 'sectors', 'date_created', 'date_updated']
-
-        ascending: bool (optional)
-            Sort results in ascending order. Defaults to True.
-            Set to False to sort in descending order. Only applicable if sort_by is not None.
-
-        Returns
-        -------
-        df: pd.DataFrame
-            Dataframe of search results.
-
-        Examples
-        --------
-        >>> from datagovindia import DataGovIndia
-        >>> datagovin = DataGovIndia()
-
-        ### Simple search
-        >>> datagovin.search("covid") 
-
-        ### Search in specific fields
-        >>> datagovin.search("pollution", search_fields=['title', 'description'])
+            # Raise error if API key is not found
+            raise ValueError(
+                "API key not found. Please set it as an environment variable `DATAGOVINDIA_API_KEY` or pass it as an argument while initializing the DataGovIndia object."
+            )        
+        if not check_api_key(self.api_key):
+            raise ValueError("Invalid API key. Please check if the API key is valid.")
         
-        ### Search and sort results by date_created in descending order
-        >>> datagovin.search("MGNREGA", search_fields=['title', 'description'], sort_by='date_created', ascending=False)        
-        """
-        self.connect(verify=True)
-        sql_query = self.gen_sql_query(query, search_fields, sort_by, ascending)
-        self.cursor.execute(sql_query)
-        keys = list(map(lambda x: x[0], self.cursor.description))
-        values = self.cursor.fetchall()
-        records = list(map(lambda x: dict(zip(keys, x)), values))
-        data = pd.DataFrame(records)
-        if len(data) > 0:
-            for col in ["fields", "orgs", "sectors"]:
-                data[col] = data[col].str.split(" | ", regex=False)
-        self.close()
+
+    def connect(self, verify: bool = False):
+        """Connect to datagovindia.db sqlite database using a context manager"""
+        conn = sqlite3.connect(self.db_path)
+        conn.create_function("regexmatch", 2, regexmatch)
+        if verify:
+            with conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='resources'")
+                if cursor.fetchone() is None:
+                    raise ValueError(
+                        f"""
+                        Could not find tables in {self.db_path}.
+                        If this is the first time you are using this package, please run the following commands:
+                            >>> from datagovindia import DataGovIndia
+                            >>> data_gov = DataGovIndia()
+                            >>> data_gov.update_metadata()
+                        """
+                    )
+        return conn
+
+    def search(
+        self, query: str, search_fields: list = ["title"], sort_by: str = None, ascending: bool = True
+    ) -> pd.DataFrame:
+        """Search for a query in the database."""
+        with self.connect(verify=True) as conn:
+            cursor = conn.cursor()
+            sql_query = self.gen_sql_query(query, search_fields, sort_by, ascending)
+            cursor.execute(sql_query)
+            keys = [desc[0] for desc in cursor.description]
+            values = cursor.fetchall()
+            records = [dict(zip(keys, row)) for row in values]
+            data = pd.DataFrame(records)
+            if len(data) > 0:
+                for col in ["fields", "orgs", "sectors"]:
+                    data[col] = data[col].str.split(" | ", regex=False)
         return data
 
-    def gen_sql_query(self, query : str, search_fields:list=["title"], sort_by:str=None, ascending:bool=True) -> str:
-        """Construct sql query for searching the database"""
+    def gen_sql_query(
+        self, query: str, search_fields: list = ["title"], sort_by: str = None, ascending: bool = True
+    ) -> str:
+        """Construct SQL query for searching the database"""
         searchable_attributes = [
             "title",
             "description",
@@ -424,31 +436,18 @@ class DataGovIndia:
         sql_query = "SELECT * FROM resources WHERE "
         for field in search_fields:
             if field not in searchable_attributes:
-                # Raise error and print statement
-                raise ValueError(
-                    f"Invalid search field {field}, valid fields are {searchable_attributes}"
-                )
+                raise ValueError(f"Invalid search field {field}, valid fields are {searchable_attributes}")
             sql_query += f"regexmatch({field}, '{query}') OR "
         sql_query = sql_query[:-4]  # Remove the last " OR "
         if sort_by:
-            assert sort_by in searchable_attributes, f"Invalid sort_by field {sort_by}, valid fields are {searchable_attributes}"
+            assert (
+                sort_by in searchable_attributes
+            ), f"Invalid sort_by field {sort_by}, valid fields are {searchable_attributes}"
             sql_query += f" ORDER BY {sort_by} {'ASC' if ascending else 'DESC'}"
         return sql_query
 
     def get_resource_info(self, resource_id: str) -> dict:
-        """Fetches information about a resource.
-
-        Parameters
-        ----------
-        resource_id: (str) (required)
-            Unique identifier of the resource.
-
-        Returns
-        -------
-        info: dict
-            Dictionary containing information about the resource.
-        """
-        self.validate_api_key()
+        """Fetches information about a resource."""
         url = build_url(
             api_key=self.api_key,
             resource_id=resource_id,
@@ -461,6 +460,14 @@ class DataGovIndia:
         )
         api_info = get_api_info(url)
         return api_info
+
+    def get_update_info(self) -> dict:
+        """Fetches information about the last update of the database."""
+        with self.connect(verify=True) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT last_updated, number_of_resources FROM metadata")
+            info_ = dict(zip(["last_updated", "number_of_resources"], cursor.fetchone()))
+        return info_
 
     def get_data(
         self,
@@ -475,49 +482,28 @@ class DataGovIndia:
         fields: List = None,
     ) -> pd.DataFrame:
         """Returns requested data as a pandas dataframe.
+            resource_id: (str) (required) - Unique identifier of the resource.
 
-        Parameters
-        ----------
+            sort_by: (str) - Field to sort results by. Defaults to None.
 
-        resource_id: (str) (required)
-            Unique identifier of the resource.
+            ascending: (bool) - Whether to sort results in ascending order. Defaults to True. Only applicable if sort_by is not None.
 
-        sort_by: (str) (optional)
-            Field to sort results by. Defaults to None.
+            offset: (int) - Offset of the records to be fetched. Defaults to 0.
 
-        ascending: (bool) (optional)
-            Whether to sort results in ascending order. Defaults to True.
-            Only applicable if sort_by is not None.
+            batch_size: (int) - Number of records to be fetched in a single request. Defaults to 2000.
+            Increasing batch_size will increase the speed of data collection but will also increase the memory usage. Reduce `batch_size` if you are facing memory issues or timeout errors.
 
-        offset: (int) (optional)
-            Offset of the records to be fetched. Defaults to 0.
+            limit: (int) - Number of records to be fetched. Defaults to None. If None, it will be set to the total number of records available in the resource.
 
-        batch_size: (int) (optional)
-            Number of records to be fetched in a single request. Defaults to 2000.
-            Increasing batch_size will increase the speed of data collection but will also increase the memory usage.
-            reduce batch_size if you are facing memory issues or timeout errors.
+            filters: (dict) - Filters to be applied on the records, should be a dict of the form {<field>:<value>}.
 
-        limit: (int) (optional)
-            Number of records to be fetched. Defaults to None.
-            If None, it will be set to the total number of records available in the resource.
+            fields: (list) - Fields to be fetched. Defaults to []. Use `.get_resource_info` to get a list of all available fields for a resource.
 
-        filters: (dict) (optional)
-            Filters to be applied on the records, should be a dict of the form {<field>:<value>}.
+            njobs: (int) - Number of threads to use for collecting data. Defaults to None. None will use the number of CPUs available on the system.
 
-        fields: (list) (optional)
-            Fields to be fetched. Defaults to []. Use `.get_resource_info` to get a list of all available fields for a resource.
-
-        njobs: (int) (optional)
-            Number of threads to use for collecting data. Defaults to None.
-            None will use all available threads.
-
-        Returns
-        -------
-
-        df: pd.DataFrame
-            Dataframe with requested data.
+        
+        Returns: pd.Dataframe        
         """
-        self.validate_api_key()
         
         if limit is None:
             limit = self.get_resource_info(resource_id)["total"]
@@ -536,137 +522,92 @@ class DataGovIndia:
         url_list = [build_url(api_key=self.api_key, **params) for params in param_list]
         data = get_data_njobs(url_list, njobs=njobs)
         return pd.DataFrame(data)
-
-    def get_update_info(self):
-        """Fetches information about the last update of the database.
-
-        Returns
-        -------
-        info: dict
-            Dictionary containing information about the metadata in the database.
-        """
-        self.connect(verify=True)
-
-        self.cursor.execute("""
-            SELECT last_updated, number_of_resources FROM metadata
-        """)
-        info_ = dict(zip(["last_updated", "number_of_resources"], self.cursor.fetchone()))
-        self.close()
-        return info_
-
+    
     def create_tables(self):
-        """Create tables in database if they don't exist. 
-        Tables: resources, metadata
-        """
-        
-        self.connect()        
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS resources(
-                resource_id TEXT PRIMARY KEY,
-                title TEXT,
-                description TEXT,
-                org_type TEXT,
-                fields TEXT,
-                orgs TEXT,
-                source TEXT,
-                sectors TEXT,
-                date_created TEXT,
-                date_updated TEXT
+        """Create tables in database if they don't exist."""
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS resources(
+                    resource_id TEXT PRIMARY KEY,
+                    title TEXT,
+                    description TEXT,
+                    org_type TEXT,
+                    fields TEXT,
+                    orgs TEXT,
+                    source TEXT,
+                    sectors TEXT,
+                    date_created TEXT,
+                    date_updated TEXT
+                )
+            """
             )
-        """)
-        self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS metadata(
-                id INTEGER PRIMARY KEY,
-                last_updated TEXT,
-                number_of_resources INTEGER
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS metadata(
+                    id INTEGER PRIMARY KEY,
+                    last_updated TEXT,
+                    number_of_resources INTEGER
+                )
+            """
             )
-        """)
-        self.conn.commit()
-        self.close()
+            conn.commit()
 
-    def _save_update_info(self , _num_updated:int):
-        """Save info about last update to database"""
-        self.connect()
-        self.cursor.execute("""
-            DELETE FROM metadata
-        """)
-        sql = """
-            INSERT INTO metadata 
-            (last_updated, number_of_resources) 
-            VALUES (?, ?)
-        """
-        last_refreshed = current_datetime()
-        self.cursor.execute(sql, (last_refreshed, _num_updated))
-        self.conn.commit()
-        self.close()
+    def upsert_records(self, table_name: str, data_dicts: list):
+        """Insert or replace records in the database."""
+        with self.connect(verify=True) as conn:
+            cursor = conn.cursor()
+            placeholders = ", ".join(["?"] * len(data_dicts[0]))
+            columns = ", ".join(data_dicts[0].keys())
+            sql = f"""INSERT OR REPLACE INTO {table_name} 
+                      ({columns}) 
+                      VALUES ({placeholders})"""
 
-    def upsert_records(self, table_name, data_dicts):
-        """Insert or replace records in database"""
-        self.connect(verify=True)
-        placeholders = ", ".join(["?"] * len(data_dicts[0]))
-        columns = ", ".join(data_dicts[0].keys())
-        sql = f"""INSERT OR REPLACE INTO {table_name} 
-                ({columns}) 
-                VALUES ({placeholders})"""
-        
-        # Convert all values to supported types and log them
-        def convert_value(value):
-            if isinstance(value, (str, int, float, type(None))):
-                return value
-            return str(value)  # Convert unsupported types to strings
-        
-        data_values = []
-        for data_dict in data_dicts:
-            converted_values = tuple(convert_value(v) for v in data_dict.values())
-            logger.debug(f"Inserting values: {converted_values}")
-            data_values.append(converted_values)
-        
-        self.cursor.executemany(sql, data_values)
-        self.conn.commit()
-        self.close()
-        
+            def convert_value(value):
+                if isinstance(value, (str, int, float, type(None))):
+                    return value
+                return str(value)  # Convert unsupported types to strings
+            data_values = [tuple(convert_value(v) for v in data_dict.values()) for data_dict in data_dicts]
+            cursor.executemany(sql, data_values)
+            conn.commit()
 
-    def sync_metadata(self, batch_size=1000, njobs=None): # Reducing batch_size to 1000 to avoid timeout errors
-        """Updates metadata in datagovindia.db sqlite database
+    def _save_update_info(self, _num_updated: int):
+        """Save info about last update to the database."""
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM metadata")
+            sql = """INSERT INTO metadata (last_updated, number_of_resources) VALUES (?, ?)"""
+            last_refreshed = current_datetime()
+            cursor.execute(sql, (last_refreshed, _num_updated))
+            conn.commit()
 
-        Parameters
-        ----------
-
-        batch_size: int (optional)
-            Number of records to be fetched in a single request. Defaults to 2500.
-
-        njobs: int (optional)
-            Number of threads to use for collecting data. Defaults to None.
-            None will use all available threads.
-        """
-        self.validate_api_key()
-
+    def sync_metadata(self, batch_size=1000, njobs=None):
+        """Updates metadata in datagovindia.db sqlite database"""
         start_time = time.time()
 
         _num_available = get_total_available_resources()
         _num_updated = 0
 
         self.create_tables()
-        njobs  = mp.cpu_count() if njobs is None else njobs
+        njobs = mp.cpu_count() if njobs is None else njobs
         _batch = njobs * batch_size
 
         display_progress_bar(_num_updated, _num_available)
 
         for start in range(0, _num_available, _batch):
-            end     = min(_num_available, start + _batch)
-            records = fetch_metadata_records(
-                self.api_key, start=start, end=end, batch_size=batch_size, njobs=njobs
-            )
+            end = min(_num_available, start + _batch)
+            records = fetch_metadata_records(self.api_key, start=start, end=end, batch_size=batch_size, njobs=njobs)
             self.upsert_records("resources", records)
             _num_updated += len(records)
 
             # Calculate ETA
-            elapsed_time   = time.time() - start_time
-            avg_time       = elapsed_time / _num_updated
-            _num_remaining = (_num_available - _num_updated) 
+
+            elapsed_time = time.time() - start_time
+            avg_time = elapsed_time / (_num_updated if _num_updated else 1)
+            _num_remaining = _num_available - _num_updated
             eta = avg_time * _num_remaining
             display_progress_bar(_num_updated, _num_available, eta=format_seconds(eta))
-
         total_time = time.time() - start_time
         logger.info(f"\nTotal time taken: {format_seconds(total_time)} to update {_num_updated} resources.")
         self._save_update_info(_num_updated)
